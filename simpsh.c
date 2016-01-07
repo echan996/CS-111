@@ -1,16 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
-void option_parser(const char ** operation){
+void option_parser(const char ** operation, const int * values){
 	int i;
-	for (i = 0; option[i] != '\0' && option[i] != ' '; i++)
-		continue;
-	parse[i] = '\0';
-	if(parse== "--rdonly"){
-		int 
+	char* option = operation[values[0]];
+	if(option== "--rdonly"){
 	}
-	char** a = parse_option();
-		free a;
-	
+	else if (option == "--wronly"){}
+	else if (option=="--command"){}
+	else if (option == "--verbose"){}
 }
 
 
