@@ -47,7 +47,7 @@ int main(int argc, char **argv){
         
         numArgs++;
         
-        if (argv[i+1][0] == '-' && argv[i+1][1] == '-') // next one is the option
+        if (!((i+1) < argc) || argv[i+1][0] == '-' && argv[i+1][1] == '-') // next one is the option
         {
             option_parser(argv, start, numArgs);
             numArgs = 0;
