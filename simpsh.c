@@ -3,6 +3,7 @@
 #include <fcntl.h>
 int* open_files[100];
 int verbose = 0;
+int errors = 0;
 void option_parser(const char ** argv,  int start, int length){
 	if (verbose){
 		for (int i = 0; i < length - 1; i++){
@@ -13,28 +14,45 @@ void option_parser(const char ** argv,  int start, int length){
 	int i;
 	char* option = argv[start];
 	if(option== "--rdonly"){
-		if (length != 2)
+		if (length != 2){
+			errors++;
+			fprintf(stderr, "Error: Wrong number of arguments\n");
 			return;
+		}
+
 		int a = open(argv[start + 1], O_RDONLY);
+		
 		if (a == -1){
+			errors++;
 			fprintf(stderr, "Error: Unable to create file");
-			exit(1);
+			return;
 		}
 		//some storage of the open value into some global int array.
 	}
 	else if (option == "--wronly"){
-		if (length != 2)
+		if (length != 2){
+			errors++;
+			fprintf(stderr, "Error: Wrong number of arguments\n");
 			return;
+		}
+
 		int a = open(argv[start + 1], O_WRONLY);
+	
 		if (a == -1){
-			fprintf(stderr, "Error: Unable to create file");
-			exit(1);
+			errors++;
+			fprintf(stderr, "Error: Unable to create file\n");
+			return;
 		}
 	}
 	else if (option=="--command"){
-	
+		
 	}
 	else if (option == "--verbose"){
+		if (length != 1){
+			errors++;
+			fprintf(stderr, "Error: Wrong number of arguments\n");
+			return;
+		}
 		verbose = 1;
 	}
 }
