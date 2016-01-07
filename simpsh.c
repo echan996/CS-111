@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
-int* open_files[100];
+int open_files[100];
 int verbose = 0;
 int errors = 0;
 void option_parser(const char ** argv,  int start, int length){
