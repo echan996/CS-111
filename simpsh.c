@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-void option_parser(const char ** operation, const int * values){
+void option_parser(const char ** argv, const int * values){
 	int i;
 	char* option = operation[values[0]];
 	if(option== "--rdonly"){
