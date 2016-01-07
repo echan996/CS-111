@@ -10,10 +10,20 @@ void option_parser(const char ** argv, const int * values){
 	else if (option == "--verbose"){}
 }
 
-
 int main(int argc, char **argv){
-	for (int i = 1; i < argc; i++){
-		//parse for options, eg find values in argv that begin with --
-	}
+    int numArgs = 0, start;
+    for (int i = 1; i < argc; i++){
+        if (argv[i][0] == '-' && argv[i][1] == '-') // current one is the option
+            start = i;
+        
+        numArgs++;
+        
+        if (argv[i+1][0] == '-' && argv[i+1][1] == '-') // next one is the option
+        {
+            option_parser(argv, start, numArgs);
+            numArgs = 0;
+        }
+    }
 }
+
 
