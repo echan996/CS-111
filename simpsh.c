@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
-int open_files[100];
+#include <getopt.h>
+int open_files[100], maxfiles=100, curfiles=0;
 int verbose = 0;
 int errors = 0;
 void option_parser(const char ** argv,  int start, int length){
@@ -14,6 +15,8 @@ void option_parser(const char ** argv,  int start, int length){
 	int i;
 	char* option = argv[start];
 	if(option== "--rdonly"){
+		if (curfiles>=maxfiles)
+
 		if (length != 2){
 			errors++;
 			fprintf(stderr, "Error: Wrong number of arguments\n");
@@ -59,6 +62,12 @@ void option_parser(const char ** argv,  int start, int length){
 
 int main(int argc, char **argv){
     int numArgs = 0, start;
+	static struct option long_options[] = {
+			{ "rdonly", required_argument, 0, 0},
+			{ "wronly", required_argument, 0, 0},
+			{ "command", optional_argument, 0 ,0},
+			{ "verbose", no_argument, 0, 0},
+	};
     for (int i = 1; i < argc; i++){
         if (argv[i][0] == '-' && argv[i][1] == '-') // current one is the option
             start = i;
