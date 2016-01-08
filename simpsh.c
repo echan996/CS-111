@@ -63,10 +63,11 @@ void option_parser(const char ** argv,  int start, int length){
 int main(int argc, char **argv){
     int numArgs = 0, start;
 	static struct option long_options[] = {
-			{ "rdonly", required_argument, 0, 0},
-			{ "wronly", required_argument, 0, 0},
-			{ "command", optional_argument, 0 ,0},
-			{ "verbose", no_argument, 0, 0},
+			{ "rdonly", required_argument, 0, 'a'},
+			{ "wronly", required_argument, 0, 'b'},
+			{ "command", required_argument, 0 ,'c'},
+			{ "verbose", no_argument, 0, 'd'},
+			{0,0,0,0}
 	};
     for (int i = 1; i < argc; i++){
         if (argv[i][0] == '-' && argv[i][1] == '-') // current one is the option
