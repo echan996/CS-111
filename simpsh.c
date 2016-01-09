@@ -25,32 +25,27 @@ int main(int argc, char **argv){
     {
         switch (option){
             case 'a':
-                if(argv[optind-1][0] == '-' && argv[optind-1][1] == '-')
+                if(argv[optind-1][0] == '-' && argv[optind-1][1] == '-' && (optind-i)==2)
                 {
                     optind--;
                     fprintf(stderr, "Wrong number of operands");
                     break;
                 }
-                /*if (curfiles >= maxfiles){
-                 open_files = (int*)realloc(open_files, (maxfiles *= 2)*sizeof(int));
-                 if (open_files == NULL){
-                 fprintf(stderr, "Unable to reallocate memory; file was not opened.\n");
-                 exit(1);
-                 }
+				if (curfiles >= maxfiles){
+					open_files = (int*)realloc(open_files, (maxfiles *= 2)*sizeof(int));
+					if (open_files == NULL){
+						fprintf(stderr, "Unable to reallocate memory; file was not opened.\n");
+						exit(1);
+					}
+				}
+
+                int a = open(optarg, O_RDONLY);
                  
+                if (a == -1){
+					errors++;
+					fprintf(stderr, "Error: Unable to create file");
+					exit(1);
                  }
-                 if (optarg == 0){
-                 fprintf(stderr, "Wrong number of operands\n");
-                 exit(1);
-                 }
-                 if ()
-                 int a = open(optarg, O_RDONLY);
-                 
-                 if (a == -1){
-                 errors++;
-                 fprintf(stderr, "Error: Unable to create file");
-                 exit(1);
-                 }*/
                 
                 //some storage of the open value into some global int array.
                 fprintf(stdout, "rdonly option");
