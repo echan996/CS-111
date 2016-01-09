@@ -116,19 +116,6 @@ int main(int argc, char **argv){
          verbose = 1;
          }*/
     }
-	
-    /*for (int i = 1; i < argc; i++){
-        if (argv[i][0] == '-' && argv[i][1] == '-') // current one is the option
-            start = i;
-        
-        numArgs++;
-        
-        if (!((i+1) < argc) || argv[i+1][0] == '-' && argv[i+1][1] == '-') // next one is the option
-        {
-            option_parser(argv, start, numArgs);
-            numArgs = 0;
-        }
-    }*/
 }
 
 
