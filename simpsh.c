@@ -25,6 +25,12 @@ int main(int argc, char **argv){
     {
         switch (option){
             case 'a':
+                if(argv[optind-1][0] == '-' && argv[optind-1][1] == '-')
+                {
+                    optind--;
+                    fprintf(stderr, "Wrong number of operands");
+                    break;
+                }
                 /*if (curfiles >= maxfiles){
                  open_files = (int*)realloc(open_files, (maxfiles *= 2)*sizeof(int));
                  if (open_files == NULL){
@@ -50,6 +56,12 @@ int main(int argc, char **argv){
                 fprintf(stdout, "rdonly option");
                 break;
             case 'b':
+                if(argv[optind-1][0] == '-' && argv[optind-1][1] == '-')
+                {
+                    optind--;
+                    fprintf(stderr, "Wrong number of operands");
+                    break;
+                }
                 fprintf(stdout, "wronly option");
                 break;
             case 'c':
