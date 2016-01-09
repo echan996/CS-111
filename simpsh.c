@@ -2,12 +2,36 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <getopt.h>
-int open_files[10], maxfiles=10, curfiles=0;
+
+int maxfiles=10, curfiles=0;
+int* open_files;
 int verbose = 0;
 int errors = 0;
 void option_parser(char option){
 	switch (option){
 	case 'a':
+		if (curfiles >= maxfiles){
+			open_files = (int*)realloc(open_files, (maxfiles *= 2)*sizeof(int));
+			if (open_files == NULL){
+				fprintf(stderr, "Unable to reallocate memory; file was not opened.\n");
+				exit(1);
+			}
+
+		}
+		if (optarg == 0){
+			fprintf(stderr, "Wrong number of operands\n");
+			exit(1);
+		}
+		if ()
+		int a = open(optarg, O_RDONLY);
+
+		if (a == -1){
+			errors++;
+			fprintf(stderr, "Error: Unable to create file");
+			exit(1);
+		}
+
+		//some storage of the open value into some global int array.
 		fprintf(stdout, "rdonly option");
 		break;
 	case 'b':
@@ -78,6 +102,7 @@ void option_parser(char option){
 
 int main(int argc, char **argv){
     int numArgs = 0, start;
+	open_files = (int*)malloc(maxfiles*sizeof(int));
 	static struct option long_options[] = {
 			{ "rdonly", required_argument, 0, 'a'},
 			{ "wronly", required_argument, 0, 'b'},
