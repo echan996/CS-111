@@ -2,18 +2,34 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <getopt.h>
-int open_files[100], maxfiles=100, curfiles=0;
+int open_files[10], maxfiles=10, curfiles=0;
 int verbose = 0;
 int errors = 0;
-void option_parser(const char ** argv,  int start, int length){
-	if (verbose){
+void option_parser(char option){
+	switch (option){
+	case 'a':
+		fprintf(stdout, "rdonly option");
+		break;
+	case 'b':
+		fprintf(stdout, "wronly option");
+		break;
+	case 'c':
+		fprintf(stdout, "command option");
+		break;
+	case 'd':
+		fprintf(stdout, "verbose option");
+		verbose = 1;
+		break;
+	default:
+		break;
+	}
+	/*if (verbose){
 		for (int i = 0; i < length - 1; i++){
 			fprintf(stdout, argv[start + i] + ' ');
 		}
 		fprintf(stdout, argv[start + length - 1] + '\n');
 	}
-	int i;
-	char* option = argv[start];
+	
 	if(option== "--rdonly"){
 		if (curfiles>=maxfiles)
 
@@ -57,7 +73,7 @@ void option_parser(const char ** argv,  int start, int length){
 			return;
 		}
 		verbose = 1;
-	}
+	}*/
 }
 
 int main(int argc, char **argv){
@@ -69,6 +85,7 @@ int main(int argc, char **argv){
 			{ "verbose", no_argument, 0, 'd'},
 			{0,0,0,0}
 	};
+	
     for (int i = 1; i < argc; i++){
         if (argv[i][0] == '-' && argv[i][1] == '-') // current one is the option
             start = i;
