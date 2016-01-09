@@ -45,8 +45,10 @@ void option_parser(char option){
 		verbose = 1;
 		break;
 	default:
+        fprintf(stdout, "default case");
 		break;
 	}
+    fprintf(stdout, "\n%c\n", option);
 	/*if (verbose){
 		for (int i = 0; i < length - 1; i++){
 			fprintf(stdout, argv[start + i] + ' ');
@@ -111,10 +113,10 @@ int main(int argc, char **argv){
 			{0,0,0,0}
 	};
     
-    int a = 0;
-    for (int i = 1; i < argc || a != -1; i++)
+    char a = 0;
+    int i = 0;
+    while ((a = (char)getopt_long(argc, argv, "", long_options, &i)) != -1)
     {
-        a = getopt_long(argc, argv, , long_options, i);
         option_parser(a);
     }
 	
