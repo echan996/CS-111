@@ -25,52 +25,55 @@ int main(int argc, char **argv){
     {
         switch (option){
             case 'a':
-                if(argv[optind-1][0] == '-' && argv[optind-1][1] == '-' && (optind-i)==2)
+                fprintf(stdout, "optind is %d\n", optind);
+                fprintf(stdout, "i is %d\n", i);
+                
+                if((argv[optind-1][0] == '-' && argv[optind-1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
                 {
                     optind--;
-                    fprintf(stderr, "Wrong number of operands");
+                    fprintf(stderr, "Wrong number of operands\n");
                     break;
                 }
 				if (curfiles >= maxfiles){
 					open_files = (int*)realloc(open_files, (maxfiles *= 2)*sizeof(int));
 					if (open_files == NULL){
 						fprintf(stderr, "Unable to reallocate memory; file was not opened.\n");
-						exit(1);
+						break;
 					}
 				}
-
+               
                 int a = open(optarg, O_RDONLY);
-                 
+                
                 if (a == -1){
 					errors++;
-					fprintf(stderr, "Error: Unable to create file");
-					exit(1);
+					fprintf(stderr, "Error: Unable to create file\n");
+					break;
                  }
                 
                 //some storage of the open value into some global int array.
-                fprintf(stdout, "rdonly option");
+                fprintf(stdout, "rdonly option\n");
                 break;
             case 'b':
                 if(argv[optind-1][0] == '-' && argv[optind-1][1] == '-')
                 {
                     optind--;
-                    fprintf(stderr, "Wrong number of operands");
+                    fprintf(stderr, "Wrong number of operands\n");
                     break;
                 }
-                fprintf(stdout, "wronly option");
+                fprintf(stdout, "wronly option\n");
                 break;
             case 'c':
-                fprintf(stdout, "command option");
+                fprintf(stdout, "command option\n");
                 break;
             case 'd':
-                fprintf(stdout, "verbose option");
+                fprintf(stdout, "verbose option\n");
                 verbose = 1;
                 break;
             default:
-                fprintf(stdout, "default case");
+                fprintf(stdout, "default case\n");
                 break;
         }
-        fprintf(stdout, "\n%c\n", option);
+        fprintf(stdout, "%c\n", option);
         /*if (verbose){
          for (int i = 0; i < length - 1; i++){
          fprintf(stdout, argv[start + i] + ' ');
