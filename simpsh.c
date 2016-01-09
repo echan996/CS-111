@@ -25,9 +25,7 @@ int main(int argc, char **argv){
     {
         switch (option){
             case 'a':
-                fprintf(stdout, "optind is %d\n", optind);
-                fprintf(stdout, "i is %d\n", i);
-                
+
                 if((argv[optind-1][0] == '-' && argv[optind-1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
                 {
                     optind--;
@@ -49,17 +47,38 @@ int main(int argc, char **argv){
 					fprintf(stderr, "Error: Unable to create file\n");
 					break;
                  }
+					
+				openfiles[curfiles++];
                 
                 //some storage of the open value into some global int array.
                 fprintf(stdout, "rdonly option\n");
                 break;
             case 'b':
-                if(argv[optind-1][0] == '-' && argv[optind-1][1] == '-')
-                {
-                    optind--;
-                    fprintf(stderr, "Wrong number of operands\n");
-                    break;
-                }
+
+
+				if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
+				{
+					optind--;
+					fprintf(stderr, "Wrong number of operands\n");
+					break;
+				}
+				if (curfiles >= maxfiles){
+					open_files = (int*)realloc(open_files, (maxfiles *= 2)*sizeof(int));
+					if (open_files == NULL){
+						fprintf(stderr, "Unable to reallocate memory; file was not opened.\n");
+						break;
+					}
+				}
+
+				int a = open(optarg, O_WRONLY);
+
+				if (a == -1){
+					errors++;
+					fprintf(stderr, "Error: Unable to create file\n");
+					break;
+				}
+
+				openfiles[curfiles++];
                 fprintf(stdout, "wronly option\n");
                 break;
             case 'c':
@@ -74,57 +93,7 @@ int main(int argc, char **argv){
                 break;
         }
         fprintf(stdout, "%c\n", option);
-        /*if (verbose){
-         for (int i = 0; i < length - 1; i++){
-         fprintf(stdout, argv[start + i] + ' ');
-         }
-         fprintf(stdout, argv[start + length - 1] + '\n');
-         }
-         
-         if(option== "--rdonly"){
-         if (curfiles>=maxfiles)
-         
-         if (length != 2){
-         errors++;
-         fprintf(stderr, "Error: Wrong number of arguments\n");
-         return;
-         }
-         
-         int a = open(argv[start + 1], O_RDONLY);
-         
-         if (a == -1){
-         errors++;
-         fprintf(stderr, "Error: Unable to create file");
-         return;
-         }
-         //some storage of the open value into some global int array.
-         }
-         else if (option == "--wronly"){
-         if (length != 2){
-         errors++;
-         fprintf(stderr, "Error: Wrong number of arguments\n");
-         return;
-         }
-         
-         int a = open(argv[start + 1], O_WRONLY);
-         
-         if (a == -1){
-         errors++;
-         fprintf(stderr, "Error: Unable to create file\n");
-         return;
-         }
-         }
-         else if (option=="--command"){
-         
-         }
-         else if (option == "--verbose"){
-         if (length != 1){
-         errors++;
-         fprintf(stderr, "Error: Wrong number of arguments\n");
-         return;
-         }
-         verbose = 1;
-         }*/
+       
     }
 }
 
