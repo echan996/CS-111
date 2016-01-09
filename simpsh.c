@@ -85,8 +85,15 @@ int main(int argc, char **argv){
 			{ "verbose", no_argument, 0, 'd'},
 			{0,0,0,0}
 	};
+    
+    int a = 0;
+    for (int i = 1; i < argc || a != -1; i++)
+    {
+        a = getopt_long(argc, argv, , long_options, i);
+        option_parser(a);
+    }
 	
-    for (int i = 1; i < argc; i++){
+    /*for (int i = 1; i < argc; i++){
         if (argv[i][0] == '-' && argv[i][1] == '-') // current one is the option
             start = i;
         
@@ -97,7 +104,7 @@ int main(int argc, char **argv){
             option_parser(argv, start, numArgs);
             numArgs = 0;
         }
-    }
+    }*/
 }
 
 
