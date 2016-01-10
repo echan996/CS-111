@@ -4,10 +4,10 @@
 #include <getopt.h>
 #include <unistd.h>
 
-static struct file_info{
+struct file_info{
     int descriptor, readable, writable;
 };
-file_info* open_files;
+struct file_info* open_files;
 int maxfiles=10, curfiles=0;
 int* open_files;
 int verbose = 0;
@@ -20,7 +20,7 @@ int file_in_array(int a){
 }
 int main(int argc, char **argv){
     int numArgs = 0, start;
-	open_files = (int*)malloc(maxfiles*sizeof(int));
+	open_files = (struct file_info*)malloc(maxfiles*sizeof(struct file_info));
 	static struct option long_options[] = {
 			{ "rdonly", required_argument, 0, 'a'},
 			{ "wronly", required_argument, 0, 'b'},
@@ -50,7 +50,7 @@ int main(int argc, char **argv){
                     break;
                 }
 				if (curfiles >= maxfiles){
-					open_files = (int*)realloc(open_files, (maxfiles *= 2)*sizeof(int));
+					open_files = (struct file_info*)realloc(open_files, (maxfiles *= 2)*sizeof(struct file_info));
 					if (open_files == NULL){
 						fprintf(stderr, "Error: Unable to reallocate memory; file was not opened.\n");
 						break;
@@ -65,8 +65,10 @@ int main(int argc, char **argv){
 					break;
                  }
 					
-				open_files[curfiles++]=a;
-                
+				open_files[curfiles].descriptor=a;
+				open_files[curfiles].readable = 1;
+				open_files[curfiles].writable = 0;
+				curfiles++;
                 //some storage of the open value into some global int array.
                 break;
             case 'b':
@@ -79,7 +81,7 @@ int main(int argc, char **argv){
 					break;
 				}
 				if (curfiles >= maxfiles){
-					open_files = (int*)realloc(open_files, (maxfiles *= 2)*sizeof(int));
+					open_files = (struct file_info*)realloc(open_files, (maxfiles *= 2)*sizeof(struct file_info));
 					if (open_files == NULL){
 						fprintf(stderr, "Error: Unable to reallocate memory; file was not opened.\n");
 						break;
@@ -94,7 +96,11 @@ int main(int argc, char **argv){
 					break;
 				}
 
-				open_files[curfiles++]=a;
+				open_files[curfiles].descriptor = a;
+				open_files[curfiles].readable = 0;
+				open_files[curfiles].writable =	1;
+				curfiles++;
+
                 break;
             case 'c':
 				for (int i = optind - 1; i < (optind + 2) && i < argc; i++){
