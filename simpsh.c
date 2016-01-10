@@ -23,9 +23,16 @@ int main(int argc, char **argv){
     int i = 0;
     while ((option = (char)getopt_long(argc, argv, "", long_options, &i)) != -1)
     {
+		if (verbose){
+			fprintf(stdout, "%s", long_options[i]);
+			if (optarg){
+				for (int i = optind - 1; argv[i][0] != '-' && argv[i][1] != '-'; i++)
+					fprintf(stdout, " %s", argv[i]);
+			}
+			fprintf(stdout, "\n");
+		}
         switch (option){
             case 'a':
-
                 if((argv[optind-1][0] == '-' && argv[optind-1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
                 {
                     optind--;
