@@ -9,14 +9,13 @@ struct file_info{
 };
 struct file_info* open_files;
 int maxfiles=10, curfiles=0;
-int* open_files;
 int verbose = 0;
 int errors = 0;
 
 int file_in_array(int a){
 	for (int i = 0; i < curfiles; i++)
-		if (a == open_files[i]) return 1;
-	return 0;
+		if (a == open_files[i].descriptor) return i;
+	return -1;
 }
 int main(int argc, char **argv){
     int numArgs = 0, start;
@@ -109,7 +108,7 @@ int main(int argc, char **argv){
 						break;
 					}
 						
-					if (!file_in_array(atoi(argv[i]))){
+					if (file_in_array(atoi(argv[i]))==-1){
 						fprintf(stderr, "Error: File not open");
 						break;
 					}
