@@ -116,9 +116,17 @@ int main(int argc, char **argv){
                 pid_t childPID;
 				if ((childPID = fork()) < 0){
 					fprintf(stderr, "Error: Unable to fork child process");
+                    break;
 				}
 				
-				else if (childPID == 0){
+                else if (childPID == 0){
+                    int stdinFilePos = file_in_array(atoi(argv[optind-1]));
+                    int stdoutFilePos = file_in_array(atoi(argv[optind]));
+                    int stderrFilePos = file_in_array(atoi(argv[optind+1]));
+                    if (!open_files[stdinFilePos].readable || !open_files[stdoutFilePos].writable || !open_files[stderrFilePos].writable){
+                        fprintf(stderr, "Error: File permission denied");
+                        break;
+                    }
                     dup2(atoi(argv[optind-1]), STDIN_FILENO);
                     dup2(atoi(argv[optind]), STDOUT_FILENO);
                     dup2(atoi(argv[optind+1]), STDERR_FILENO);
@@ -128,8 +136,11 @@ int main(int argc, char **argv){
                     
                     if ((optind + 2) < argc && argv[optind+2][0] != '-' && argv[optind+2][1] != '-')
                         execvp(argv[optind+2], argv);
-                    else
+                    else{
                         fprintf(stderr, "Error: Invalid arguments");
+                        break;
+                    }
+                    
 				}
 
 				//execvp(, dup2);
