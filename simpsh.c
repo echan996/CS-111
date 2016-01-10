@@ -20,13 +20,13 @@ int main(int argc, char **argv){
 	};
     
     char option = 0;
-    int i = 0;
+    int i = 0, a;
     while ((option = (char)getopt_long(argc, argv, "", long_options, &i)) != -1)
     {
 		if (verbose){
-			fprintf(stdout, "%s", long_options[i]);
+			fprintf(stdout, "%s", long_options[i].name);
 			if (optarg){
-				for (int i = optind - 1; argv[i][0] != '-' && argv[i][1] != '-'; i++)
+				for (int i = optind - 1; i < argc && argv[i][0] != '-' && argv[i][1] != '-'; i++)
 					fprintf(stdout, " %s", argv[i]);
 			}
 			fprintf(stdout, "\n");
@@ -36,29 +36,28 @@ int main(int argc, char **argv){
                 if((argv[optind-1][0] == '-' && argv[optind-1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
                 {
                     optind--;
-                    fprintf(stderr, "Wrong number of operands\n");
+                    fprintf(stderr, "Error: Wrong number of operands\n");
                     break;
                 }
 				if (curfiles >= maxfiles){
 					open_files = (int*)realloc(open_files, (maxfiles *= 2)*sizeof(int));
 					if (open_files == NULL){
-						fprintf(stderr, "Unable to reallocate memory; file was not opened.\n");
+						fprintf(stderr, "Error: Unable to reallocate memory; file was not opened.\n");
 						break;
 					}
 				}
                
-                int a = open(optarg, O_RDONLY);
+                a = open(optarg, O_RDONLY);
                 
                 if (a == -1){
 					errors++;
-					fprintf(stderr, "Error: Unable to create file\n");
+					fprintf(stderr, "Error: Unable to open file\n");
 					break;
                  }
 					
-				openfiles[curfiles++];
+				open_files[curfiles++]=a;
                 
                 //some storage of the open value into some global int array.
-                fprintf(stdout, "rdonly option\n");
                 break;
             case 'b':
 
@@ -66,18 +65,18 @@ int main(int argc, char **argv){
 				if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
 				{
 					optind--;
-					fprintf(stderr, "Wrong number of operands\n");
+					fprintf(stderr, "Error: Wrong number of operands\n");
 					break;
 				}
 				if (curfiles >= maxfiles){
 					open_files = (int*)realloc(open_files, (maxfiles *= 2)*sizeof(int));
 					if (open_files == NULL){
-						fprintf(stderr, "Unable to reallocate memory; file was not opened.\n");
+						fprintf(stderr, "Error: Unable to reallocate memory; file was not opened.\n");
 						break;
 					}
 				}
 
-				int a = open(optarg, O_WRONLY);
+				a = open(optarg, O_WRONLY);
 
 				if (a == -1){
 					errors++;
@@ -85,21 +84,16 @@ int main(int argc, char **argv){
 					break;
 				}
 
-				openfiles[curfiles++];
-                fprintf(stdout, "wronly option\n");
+				open_files[curfiles++]=a;
                 break;
             case 'c':
-                fprintf(stdout, "command option\n");
                 break;
             case 'd':
-                fprintf(stdout, "verbose option\n");
                 verbose = 1;
                 break;
             default:
-                fprintf(stdout, "default case\n");
                 break;
         }
-        fprintf(stdout, "%c\n", option);
        
     }
 }
