@@ -109,7 +109,16 @@ int main(int argc, char **argv){
 				}
 				
 				else if (childPID == 0){
-					if ()
+                    dup2(atoi(argv[optind-1]), STDIN_FILENO);
+                    dup2(atoi(argv[optind]), STDOUT_FILENO);
+                    dup2(atoi(argv[optind+1]), STDERR_FILENO);
+                    close(atoi(argv[optind-1]));
+                    close(atoi(argv[optind]));
+                    close(atoi(argv[optind+1]));
+                    if ((optind + 2) < argc && arg[optind+2][0] != '-' && arg[optind+2][1] != '-')
+                        execvp(arg[optind+2], args);
+                    else
+                        fprintf(stderr, "Error: Invalid arguments");
 				}
 
 				//execvp(, dup2);
