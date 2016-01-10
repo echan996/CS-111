@@ -8,6 +8,11 @@ int* open_files;
 int verbose = 0;
 int errors = 0;
 
+int file_in_array(int a){
+	for (int i = 0; i < curfiles; i++)
+		if (a == open_files[i]) return 1;
+	return 0;
+}
 int main(int argc, char **argv){
     int numArgs = 0, start;
 	open_files = (int*)malloc(maxfiles*sizeof(int));
@@ -87,6 +92,18 @@ int main(int argc, char **argv){
 				open_files[curfiles++]=a;
                 break;
             case 'c':
+				for (int i = optind - 1; i < (optind + 2) && i < argc; i++){
+					if (!isdigit(argv[i])){
+						fprintf(stderr, "Error: Invalid file descriptor argument");
+						break;
+					}
+						
+					if (!file_in_array(atoi(argv[i]))){
+						fprintf(stderr, "Error: File not open");
+						break;
+					}
+				}
+
                 break;
             case 'd':
                 verbose = 1;
