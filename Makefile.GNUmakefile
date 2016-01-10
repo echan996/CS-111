@@ -3,25 +3,21 @@ CFLAGS = -g -Wall -Wextra -Wno-unused -Werror --std=c11
 LAB = 1
 DISTDIR = lab1-$(USER)
 
-all: timetrash
+all: simpsh
 
 TESTS = $(wildcard test*.sh)
 TEST_BASES = $(subst .sh,,$(TESTS))
 
-TIMETRASH_SOURCES = \
-  alloc.c \
-  execute-command.c \
-  main.c \
-  read-command.c \
-  print-command.c
-TIMETRASH_OBJECTS = $(subst .c,.o,$(TIMETRASH_SOURCES))
+SIMPSH_SOURCES = \
+  simpsh.c
+
+SIMPSH_OBJECTS = $(subst .c,.o,$(SIMPSH_SOURCES))
 
 DIST_SOURCES = \
-  $(TIMETRASH_SOURCES) alloc.h command.h command-internals.h Makefile \
-  $(TESTS) check-dist README
+  $(SIMPSH_SOURCES) Makefile
 
-timetrash: $(TIMETRASH_OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $(TIMETRASH_OBJECTS)
+simpsh: $(SIMPSH_OBJECTS)
+	$(CC) $(CFLAGS) -o $@ $(SIMPSH_OBJECTS)
 
 alloc.o: alloc.h
 execute-command.o main.o print-command.o read-command.o: command.h
@@ -41,6 +37,6 @@ $(TEST_BASES): timetrash
 	./$@.sh
 
 clean:
-	rm -fr *.o *~ *.bak *.tar.gz core *.core *.tmp timetrash $(DISTDIR)
+	rm -fr *.o *~ *.bak *.tar.gz core *.core *.tmp simpsh $(DISTDIR)
 
 .PHONY: all dist check $(TEST_BASES) clean
