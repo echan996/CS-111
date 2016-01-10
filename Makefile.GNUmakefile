@@ -5,9 +5,6 @@ DISTDIR = lab1-$(USER)
 
 all: simpsh
 
-TESTS = $(wildcard test*.sh)
-TEST_BASES = $(subst .sh,,$(TESTS))
-
 SIMPSH_SOURCES = \
   simpsh.c
 
@@ -19,10 +16,6 @@ DIST_SOURCES = \
 simpsh: $(SIMPSH_OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $(SIMPSH_OBJECTS)
 
-alloc.o: alloc.h
-execute-command.o main.o print-command.o read-command.o: command.h
-execute-command.o print-command.o read-command.o: command-internals.h
-
 dist: $(DISTDIR).tar.gz
 
 $(DISTDIR).tar.gz: $(DIST_SOURCES) check-dist
@@ -30,8 +23,6 @@ $(DISTDIR).tar.gz: $(DIST_SOURCES) check-dist
 	tar -czf $@.tmp --transform='s,^,$(DISTDIR)/,' $(DIST_SOURCES)
 	./check-dist $(DISTDIR)
 	mv $@.tmp $@
-
-check: $(TEST_BASES)
 
 $(TEST_BASES): timetrash
 	./$@.sh
