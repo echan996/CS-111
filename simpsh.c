@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <getopt.h>
+#include <unistd.h>
 
 int maxfiles=10, curfiles=0;
 int* open_files;
@@ -103,6 +104,19 @@ int main(int argc, char **argv){
 						break;
 					}
 				}
+				if ((pid_t childPID = fork()) < 0){
+					fprintf(stderr, "Error: Unable to fork child process");
+				}
+				
+				else if (childPID == 0){
+					if ()
+				}
+
+				//execvp(, dup2);
+				
+				//have a getopt thing parse in here looking for params that begin with - and only -.
+
+				
 
                 break;
             case 'd':
