@@ -4,6 +4,10 @@
 #include <getopt.h>
 #include <unistd.h>
 
+static struct file_info{
+    int descriptor, readable, writable;
+};
+file_info* open_files;
 int maxfiles=10, curfiles=0;
 int* open_files;
 int verbose = 0;
@@ -104,7 +108,8 @@ int main(int argc, char **argv){
 						break;
 					}
 				}
-				if ((pid_t childPID = fork()) < 0){
+                pid_t childPID;
+				if ((childPID = fork()) < 0){
 					fprintf(stderr, "Error: Unable to fork child process");
 				}
 				
@@ -115,8 +120,9 @@ int main(int argc, char **argv){
                     close(atoi(argv[optind-1]));
                     close(atoi(argv[optind]));
                     close(atoi(argv[optind+1]));
-                    if ((optind + 2) < argc && arg[optind+2][0] != '-' && arg[optind+2][1] != '-')
-                        execvp(arg[optind+2], args);
+                    
+                    if ((optind + 2) < argc && argv[optind+2][0] != '-' && argv[optind+2][1] != '-')
+                        execvp(argv[optind+2], argv);
                     else
                         fprintf(stderr, "Error: Invalid arguments");
 				}
