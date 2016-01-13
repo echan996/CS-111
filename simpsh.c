@@ -3,6 +3,8 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 struct file_info{
     int descriptor, readable, writable;
