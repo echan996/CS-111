@@ -103,7 +103,7 @@ int main(int argc, char **argv){
                 break;
 
 			case 'c':{
-
+				/////////////////////////////////////////////////////////////////////////////////Error Checking/////////////////////////////////////////////////////////////////////////////////////////
 				for (int i = optind - 1; i < (optind + 2) && i < argc; i++){
 					for (int x = 0; argv[i][x] != '\0'; x++)
 						if (!isdigit(argv[i][x])){
@@ -117,26 +117,25 @@ int main(int argc, char **argv){
 					}
 				}
 
-				int childPID = fork();
-				int fd[2];
-				pipe(fd);
-
+				
 				int stdinFilePos = file_in_array(atoi(argv[optind - 1])), stdoutFilePos = file_in_array(atoi(argv[optind])), stderrFilePos = file_in_array(atoi(argv[optind + 1]));
-
 				if (!open_files[stdinFilePos].readable || !open_files[stdoutFilePos].writable || !open_files[stderrFilePos].writable){
 					fprintf(stderr, "Error: File permission denied\n");
 					break;
-
                 int count = 0;
                 for (int e = optind + 2; e < argc && (argv[e][0] != '-' && argv[e][1] != '-'); e++, count++){
                     continue;
                 }
-                
                 char ** a = (char **)malloc(sizeof(char*)*count);
                 
                 for (int e = optind + 2, counter = 0; counter < count; e++){
                     a[counter] = argv[e];
                 }
+				////////////////////////////////////////////////////////////////////////Executable Processing////////////////////////////////////////////////////////////////////
+
+				int childPID = fork();
+				int fd[2];
+				pipe(fd);
 
 				if (childPID < 0){
 					fprintf(stderr, "Error: Unable to fork child process\n");
@@ -175,13 +174,15 @@ int main(int argc, char **argv){
 						}
 					}
 				}
-
-				
 				break; 
 			}
-            case 'd':
+
+			
+			case 'd':
                 verbose = 1;
                 break;
+
+
             default:
                 break;
         }
