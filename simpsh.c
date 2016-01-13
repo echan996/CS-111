@@ -102,9 +102,6 @@ int main(int argc, char **argv){
 			break;
 
 		case 'c':{
-			for (int y = 0; y < 3; y++)
-				fprintf(stdout, "%d\n", open_files[y].descriptor);
-
 			for (int i = optind - 1; i < (optind + 2) && i < argc; i++){
 				for (int x = 0; argv[i][x] != '\0'; x++)
 					if (!isdigit(argv[i][x])){
