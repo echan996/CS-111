@@ -10,7 +10,7 @@ struct file_info{
 struct file_info* open_files;
 int maxfiles=10, curfiles=0;
 int verbose = 0;
-int errors = 0;
+int errors = 0;//deal with after
 
 int file_in_array(int a){
 	for (int i = 0; i < curfiles; i++)
@@ -101,59 +101,74 @@ int main(int argc, char **argv){
 				curfiles++;
 
                 break;
-            case 'c':
+
+			case 'c':{
+
 				for (int i = optind - 1; i < (optind + 2) && i < argc; i++){
-					if (!isdigit(argv[i])){
+					for (int x = 0; argv[i][x] != '\0'; x++)
+						if (!isdigit(argv[i][x])){
 						fprintf(stderr, "Error: Invalid file descriptor argument\n");
 						break;
-					}
-						
-					if (file_in_array(atoi(argv[i]))==-1){
+						}
+
+					if (file_in_array(atoi(argv[i])) == -1){
 						fprintf(stderr, "Error: File not open\n");
 						break;
 					}
 				}
-                pid_t childPID;
-				if ((childPID = fork()) < 0){
+
+				int childPID = fork();
+				int fd[2];
+				pipe(fd);
+
+				int stdinFilePos = file_in_array(atoi(argv[optind - 1])), stdoutFilePos = file_in_array(atoi(argv[optind])), stderrFilePos = file_in_array(atoi(argv[optind + 1]));
+
+				if (!open_files[stdinFilePos].readable || !open_files[stdoutFilePos].writable || !open_files[stderrFilePos].writable){
+					fprintf(stderr, "Error: File permission denied\n");
+					break;
+				}
+
+				if (childPID < 0){
 					fprintf(stderr, "Error: Unable to fork child process\n");
-                    break;
-				}
-				
-                else if (childPID == 0){
-                    int stdinFilePos = file_in_array(atoi(argv[optind-1]));
-                    int stdoutFilePos = file_in_array(atoi(argv[optind]));
-                    int stderrFilePos = file_in_array(atoi(argv[optind+1]));
-                    if (!open_files[stdinFilePos].readable || !open_files[stdoutFilePos].writable || !open_files[stderrFilePos].writable){
-                        fprintf(stderr, "Error: File permission denied\n");
-                        break;
-                    }
-					int a;
-					for (a = optind - 2; a < argc && argv[a][0] == '-' && argv[a][1] != '\0'; a++)
-						continue;
-
-                    dup2(atoi(argv[optind-1]), STDIN_FILENO);
-                    dup2(atoi(argv[optind]), STDOUT_FILENO);
-                    dup2(atoi(argv[optind+1]), STDERR_FILENO);
-                    close(atoi(argv[optind-1]));
-                    close(atoi(argv[optind]));
-                    close(atoi(argv[optind+1]));
-                    
-                    if ((optind + 2) < argc && argv[optind+2][0] != '-' && argv[optind+2][1] != '-')
-                        execvp(argv[optind+2], argv);
-                    else{
-                        fprintf(stderr, "Error: Invalid arguments\n");
-                        break;
-                    }
-                    
+					break;
 				}
 
-				//execvp(, dup2);
-				
-				//have a getopt thing parse in here looking for params that begin with - and only -.
+				else if (childPID == 0){
+					close(fd[1]);
+					dup2(fd[0], STDIN_FILENO);
+					dup2(open_files[stdoutFilePos].descriptor, STDOUT_FILENO);
+					dup2(open_files[stderrFilePos].descriptor, STDERR_FILENO);
+					execvp(a[0], a);
+				}
+				else{
+					int parentPID = fork();
+					if (parentPID == 0){
+						close(fd[0]);
+						dup2(open_files[stdinFilePos].descriptor, STDIN_FILENO);
+						dup2(fd[1], STDOUT_FILENO);
+						dup2(open_files[stderrFilePos].descriptor, STDERR_FILENO);
+						execvp(a[0], a);
+					}
+					else{
+						close(fd[0]);
+						close(fd[1]);
+						int status;
+						int returnedPid = waitpid(-1, &status, 0);
+						if (returnedPid == parentPID)
+						{
+							waitpid(childPID, &status, 0);
+						}
+						if (returnedPid == childPID)
+						{
+							waitpid(parentPID, &status, 0);
+							free(a);
+						}
+					}
+				}
 
 				
-
-                break;
+				break; 
+			}
             case 'd':
                 verbose = 1;
                 break;
