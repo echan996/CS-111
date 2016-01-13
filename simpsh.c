@@ -188,8 +188,9 @@ int main(int argc, char **argv){
 		}
 
 
-		free(open_files);
+		
 	}
+	free(open_files);
 }
 
 
