@@ -127,13 +127,6 @@ int main(int argc, char **argv){
 					fprintf(stderr, "Error: File permission denied\n");
 					break;
 
-                // parse through argv to find options to pass into command
-                // subset of argv that ends at -- or argc
-                // simpsh --command 0 1 2 cat b - --verbose
-                //   0         1    2 3 4  5  6 7      8
-                // simpsh --command 0 1 2 cat b -
-                //   0         1    2 3 4  5  6 7
-                // simpsh --command 0 1 2 --verbose
                 int count = 0;
                 for (int e = optind + 2; e < argc && (argv[e][0] != '-' && argv[e][1] != '-'); e++, count++){
                     continue;
