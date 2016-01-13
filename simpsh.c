@@ -104,18 +104,18 @@ int main(int argc, char **argv){
             case 'c':
 				for (int i = optind - 1; i < (optind + 2) && i < argc; i++){
 					if (!isdigit(argv[i])){
-						fprintf(stderr, "Error: Invalid file descriptor argument");
+						fprintf(stderr, "Error: Invalid file descriptor argument\n");
 						break;
 					}
 						
 					if (file_in_array(atoi(argv[i]))==-1){
-						fprintf(stderr, "Error: File not open");
+						fprintf(stderr, "Error: File not open\n");
 						break;
 					}
 				}
                 pid_t childPID;
 				if ((childPID = fork()) < 0){
-					fprintf(stderr, "Error: Unable to fork child process");
+					fprintf(stderr, "Error: Unable to fork child process\n");
                     break;
 				}
 				
@@ -124,7 +124,7 @@ int main(int argc, char **argv){
                     int stdoutFilePos = file_in_array(atoi(argv[optind]));
                     int stderrFilePos = file_in_array(atoi(argv[optind+1]));
                     if (!open_files[stdinFilePos].readable || !open_files[stdoutFilePos].writable || !open_files[stderrFilePos].writable){
-                        fprintf(stderr, "Error: File permission denied");
+                        fprintf(stderr, "Error: File permission denied\n");
                         break;
                     }
                     dup2(atoi(argv[optind-1]), STDIN_FILENO);
@@ -137,7 +137,7 @@ int main(int argc, char **argv){
                     if ((optind + 2) < argc && argv[optind+2][0] != '-' && argv[optind+2][1] != '-')
                         execvp(argv[optind+2], argv);
                     else{
-                        fprintf(stderr, "Error: Invalid arguments");
+                        fprintf(stderr, "Error: Invalid arguments\n");
                         break;
                     }
                     
