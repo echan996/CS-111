@@ -127,6 +127,10 @@ int main(int argc, char **argv){
                         fprintf(stderr, "Error: File permission denied\n");
                         break;
                     }
+					int a;
+					for (a = optind - 2; a < argc && argv[a][0] == '-' && argv[a][1] != '\0'; a++)
+						continue;
+
                     dup2(atoi(argv[optind-1]), STDIN_FILENO);
                     dup2(atoi(argv[optind]), STDOUT_FILENO);
                     dup2(atoi(argv[optind+1]), STDERR_FILENO);

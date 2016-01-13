@@ -7,11 +7,12 @@ all: simpsh
 
 SIMPSH_SOURCES = \
   simpsh.c
+TESTS = $(test.sh)
 
 SIMPSH_OBJECTS = $(subst .c,.o,$(SIMPSH_SOURCES))
 
 DIST_SOURCES = \
-  $(SIMPSH_SOURCES) Makefile
+  $(SIMPSH_SOURCES) $(TESTS) Makefile
 
 simpsh: $(SIMPSH_OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $(SIMPSH_OBJECTS)
@@ -24,9 +25,7 @@ $(DISTDIR).tar.gz: $(DIST_SOURCES) check-dist
 	./check-dist $(DISTDIR)
 	mv $@.tmp $@
 
-$(TEST_BASES): timetrash
-	./$@.sh
-
+check: 
 clean:
 	rm -fr *.o *~ *.bak *.tar.gz core *.core *.tmp simpsh $(DISTDIR)
 
