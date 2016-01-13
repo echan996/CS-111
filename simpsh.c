@@ -103,7 +103,7 @@ int main(int argc, char **argv){
 
 		case 'c':{
 			for (int y = 0; y < 3; y++)
-				fprintf(stdout, "%d\n", open_files[y]);
+				fprintf(stdout, "%d\n", open_files[y].descriptor);
 
 			for (int i = optind - 1; i < (optind + 2) && i < argc; i++){
 				for (int x = 0; argv[i][x] != '\0'; x++)
@@ -129,7 +129,7 @@ int main(int argc, char **argv){
 				continue;
 			}
 			char ** a = (char **)malloc(sizeof(char*)*count);
-			for (int e = optind + 2, counter = 0; counter < count; e++){
+			for (int e = optind + 2, counter = 0; counter < count; e++, counter++){
 				a[counter] = argv[e];
 			}
 			////////////////////////////////////////////////////////////////////////Executable Processing////////////////////////////////////////////////////////////////////
