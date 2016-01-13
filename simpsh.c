@@ -129,14 +129,13 @@ int main(int argc, char **argv){
 				continue;
 			}
 			char ** a = (char **)malloc(sizeof(char*)*count);
-			for (int e = optind + 2, counter = 0; counter < count; e++){
 				a[counter] = argv[e];
-			}
+			
 			////////////////////////////////////////////////////////////////////////Executable Processing////////////////////////////////////////////////////////////////////
 
 			int childPID = fork();
 			int fd[2];
-			pipe(fd);
+			//pipe(fd);
 
 			if (childPID < 0){
 				fprintf(stderr, "Error: Unable to fork child process\n");
@@ -144,14 +143,17 @@ int main(int argc, char **argv){
 			}
 
 			else if (childPID == 0){
-				close(fd[1]);
-				dup2(fd[0], STDIN_FILENO);
+				//close(fd[1]);
+				dup2(open_files[stdinFilePos], STDIN_FILENO);
 				dup2(open_files[stdoutFilePos].descriptor, STDOUT_FILENO);
 				dup2(open_files[stderrFilePos].descriptor, STDERR_FILENO);
 				execvp(a[0], a);
 			}
 			else{
-				int parentPID = fork();
+				int status;
+				int returnedPid=waitpid(childID, &status, 0);
+				free(a);
+				/*int parentPID = fork();
 				if (parentPID == 0){
 					close(fd[0]);
 					dup2(open_files[stdinFilePos].descriptor, STDIN_FILENO);
@@ -173,7 +175,7 @@ int main(int argc, char **argv){
 						waitpid(parentPID, &status, 0);
 						free(a);
 					}
-				}
+				}*/
 			}
 			break;
 
