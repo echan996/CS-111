@@ -33,7 +33,7 @@ int main(int argc, char **argv){
 		if (verbose){
 			fprintf(stdout, "%s", long_options[i].name);
 			if (optarg){
-				for (int i = optind - 1; i < argc && argv[i][0] != '-' && argv[i][1] != '-'; i++)
+				for (int i = optind - 1; i < argc && (argv[i][0] != '-' || argv[i][1] != '-'); i++)
 					fprintf(stdout, " %s", argv[i]);
 			}
 			fprintf(stdout, "\n");
@@ -125,7 +125,7 @@ int main(int argc, char **argv){
 				break;
 			}
 			int count = 0;
-			for (int e = optind + 2; e < argc && (argv[e][0] != '-' && argv[e][1] != '-'); e++, count++){
+			for (int e = optind + 2; e < argc && (argv[e][0] != '-' || argv[e][1] != '-'); e++, count++){
 				continue;
 			}
 			char ** a = (char **)malloc(sizeof(char*)*count);
