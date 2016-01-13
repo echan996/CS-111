@@ -2,6 +2,7 @@ CC = gcc
 CFLAGS = -std=c11 -g -Wall -Wextra -Wno-unused
 LAB = 1
 DISTDIR = lab1-$(USER)
+export PATH := /usr/local/cs/bin:$(PATH)
 
 all: simpsh
 
