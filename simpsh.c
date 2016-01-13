@@ -3,6 +3,8 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 struct file_info{
     int descriptor, readable, writable;
@@ -83,6 +85,7 @@ int main(int argc, char **argv){
 				}
 			}
 
+
 			a = open(optarg, O_WRONLY);
 
 			if (a == -1){
@@ -99,7 +102,9 @@ int main(int argc, char **argv){
 			break;
 
 		case 'c':{
-			/////////////////////////////////////////////////////////////////////////////////Error Checking/////////////////////////////////////////////////////////////////////////////////////////
+			for (int y = 0; y < 3; y++)
+				fprintf(stdout, "%d\n", open_files[y]);
+
 			for (int i = optind - 1; i < (optind + 2) && i < argc; i++){
 				for (int x = 0; argv[i][x] != '\0'; x++)
 					if (!isdigit(argv[i][x])){
@@ -182,8 +187,9 @@ int main(int argc, char **argv){
 			break;
 		}
 
-		}
+
 		free(open_files);
 	}
+}
 
 
