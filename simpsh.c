@@ -37,7 +37,7 @@ int main(int argc, char **argv){
 					fprintf(stdout, " %s", argv[i]);
 			}
 			fprintf(stdout, "\n");
-		}
+		}//change this in a bit
 		switch (option){
 		case 'a':
 			if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
@@ -125,11 +125,7 @@ int main(int argc, char **argv){
 				break;
 			}
 			int count = 0;
-			for (int e = optind + 2; e < argc && (argv[e][0] != '-' || argv[e][1] != '-'); e++, count++){
-				continue;
-			}
-			char ** a = (char **)malloc(sizeof(char*)*count);
-				a[counter] = argv[e];
+			// can remove this checking
 			
 			////////////////////////////////////////////////////////////////////////Executable Processing////////////////////////////////////////////////////////////////////
 
@@ -147,12 +143,13 @@ int main(int argc, char **argv){
 				dup2(open_files[stdinFilePos], STDIN_FILENO);
 				dup2(open_files[stdoutFilePos].descriptor, STDOUT_FILENO);
 				dup2(open_files[stderrFilePos].descriptor, STDERR_FILENO);
-				execvp(a[0], a);
+				execvp(argv[optind+2], argv);
 			}
 			else{
 				int status;
 				int returnedPid=waitpid(childID, &status, 0);
-				free(a);
+
+				break;
 				/*int parentPID = fork();
 				if (parentPID == 0){
 					close(fd[0]);
@@ -177,7 +174,7 @@ int main(int argc, char **argv){
 					}
 				}*/
 			}
-			break;
+		
 
 		}
 		case 'd':
