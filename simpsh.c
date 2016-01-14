@@ -12,13 +12,7 @@ struct file_info{
 struct file_info* open_files;
 int maxfiles=10, curfiles=0;
 int verbose = 0;
-int errors = 0;//deal with after
-
-int file_in_array(int a){
-    for (int i = 0; i < curfiles; i++)
-        if (a == open_files[i].descriptor) return i;
-    return -1;
-}
+int errors = 0; //deal with after
 
 int main(int argc, char **argv){
 	int numArgs = 0, start;
@@ -108,10 +102,12 @@ int main(int argc, char **argv){
 
 		case 'c':{
 			int index, count=0;
+            int oldoptind = optind;
 			for (index = optind - 1; index < argc; index++, count++){
 				if (argv[index][0] == '-' && argv[index][1] == '-')
 					break;
 			}
+            optind = index;
 			if (count < 4){
 				fprintf(stderr, "Error: --command requires at least 4 options.\n");
 				break;
@@ -119,8 +115,8 @@ int main(int argc, char **argv){
 			int fcheck=1;
             
             int openCheck = 0;
-            for (int i = optind - 1; i < (optind + 2) && i < argc; i++){
-                if (file_in_array(atoi(argv[i])) == -1){
+            for (int i = oldoptind - 1; i < (oldoptind + 2) && i < argc; i++){
+                if (atoi(argv[i]) >= curfiles){
                     openCheck = 1;
                     break;
                 }
@@ -130,7 +126,7 @@ int main(int argc, char **argv){
                 break;
             }
 			
-			int stdinFilePos = atoi(argv[optind - 1]), stdoutFilePos = atoi(argv[optind]), stderrFilePos = atoi(argv[optind + 1]);
+			int stdinFilePos = atoi(argv[oldoptind - 1]), stdoutFilePos = atoi(argv[oldoptind]), stderrFilePos = atoi(argv[oldoptind + 1]);
 			/*if (!open_files[stdinFilePos].readable || !open_files[stdoutFilePos].writable || !open_files[stderrFilePos].writable){
 				fprintf(stderr, "Error: File permission denied\n");
 				break;
@@ -153,7 +149,7 @@ int main(int argc, char **argv){
 				int b=dup2(open_files[stdinFilePos].descriptor, STDIN_FILENO), c=dup2(open_files[stdoutFilePos].descriptor, STDOUT_FILENO), d=dup2(open_files[stderrFilePos].descriptor, STDERR_FILENO);
 				if (d == -1 || b == -1 || c == -1)
 					fprintf(stderr, "Error: unable to open file");
-				execvp(argv[optind + 2], &argv[optind + 2]);
+				execvp(argv[oldoptind + 2], &argv[oldoptind + 2]);
 
 			}
 			else{
