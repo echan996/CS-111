@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 
 function should_fail() {
   result=$?;

@@ -136,7 +136,7 @@ int main(int argc, char **argv){
 				int b=dup2(open_files[stdinFilePos].descriptor, STDIN_FILENO), c=dup2(open_files[stdoutFilePos].descriptor, STDOUT_FILENO), d=dup2(open_files[stderrFilePos].descriptor, STDERR_FILENO);
 				if (a == -1 || b == -1 || c == -1)
 					fprintf(stderr, "Error: unable to open file");
-				execvp(argv[index], &argv[index]);
+				execvp(argv[optind + 2], &argv[optind + 2]);
 
 			}
 			else{
