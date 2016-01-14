@@ -14,6 +14,11 @@ int maxfiles=10, curfiles=0;
 int verbose = 0;
 int errors = 0;//deal with after
 
+int file_in_array(int a){
+    for (int i = 0; i < curfiles; i++)
+        if (a == open_files[i].descriptor) return i;
+    return -1;
+}
 
 int main(int argc, char **argv){
 	int numArgs = 0, start;
@@ -112,6 +117,18 @@ int main(int argc, char **argv){
 				break;
 			}
 			int fcheck=1;
+            
+            int openCheck = 0;
+            for (int i = optind - 1; i < (optind + 2) && i < argc; i++){
+                if (file_in_array(atoi(argv[i])) == -1){
+                    openCheck = 1;
+                    break;
+                }
+            }
+            if (openCheck){
+                fprintf(stderr, "Error: File not open\n");
+                break;
+            }
 			
 			int stdinFilePos = atoi(argv[optind - 1]), stdoutFilePos = atoi(argv[optind]), stderrFilePos = atoi(argv[optind + 1]);
 			/*if (!open_files[stdinFilePos].readable || !open_files[stdoutFilePos].writable || !open_files[stderrFilePos].writable){
@@ -134,7 +151,7 @@ int main(int argc, char **argv){
 			else if (childPID == 0){
 				//close(fd[1]);
 				int b=dup2(open_files[stdinFilePos].descriptor, STDIN_FILENO), c=dup2(open_files[stdoutFilePos].descriptor, STDOUT_FILENO), d=dup2(open_files[stderrFilePos].descriptor, STDERR_FILENO);
-				if (a == -1 || b == -1 || c == -1)
+				if (d == -1 || b == -1 || c == -1)
 					fprintf(stderr, "Error: unable to open file");
 				execvp(argv[optind + 2], &argv[optind + 2]);
 
