@@ -104,7 +104,7 @@ int main(int argc, char **argv){
 		case 'c':{
 			int index, count=0;
 			for (index = optind - 1; index < argc; index++, count++){
-				if (argv[index][0] != '-' || argv[index][1] != '-')
+				if (argv[index][0] == '-' && argv[index][1] == '-')
 					break;
 			}
 			if (count < 4){
@@ -113,8 +113,8 @@ int main(int argc, char **argv){
 			}
 			int fcheck=1;
 			
-			/*int stdinFilePos = atoi(argv[optind - 1]), stdoutFilePos = atoi(argv[optind]), stderrFilePos = atoi(argv[optind + 1]);
-			if (!open_files[stdinFilePos].readable || !open_files[stdoutFilePos].writable || !open_files[stderrFilePos].writable){
+			int stdinFilePos = atoi(argv[optind - 1]), stdoutFilePos = atoi(argv[optind]), stderrFilePos = atoi(argv[optind + 1]);
+			/*if (!open_files[stdinFilePos].readable || !open_files[stdoutFilePos].writable || !open_files[stderrFilePos].writable){
 				fprintf(stderr, "Error: File permission denied\n");
 				break;
 			}
@@ -133,7 +133,7 @@ int main(int argc, char **argv){
 
 			else if (childPID == 0){
 				//close(fd[1]);
-				int b=dup2(open_files[].descriptor, STDIN_FILENO), c=dup2(open_files[stdoutFilePos].descriptor, STDOUT_FILENO), d=dup2(open_files[stderrFilePos].descriptor, STDERR_FILENO);
+				int b=dup2(open_files[stdinFilePos].descriptor, STDIN_FILENO), c=dup2(open_files[stdoutFilePos].descriptor, STDOUT_FILENO), d=dup2(open_files[stderrFilePos].descriptor, STDERR_FILENO);
 				if (a == -1 || b == -1 || c == -1)
 					fprintf(stderr, "Error: unable to open file");
 				execvp(argv[index], &argv[index]);
