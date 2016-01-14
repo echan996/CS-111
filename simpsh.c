@@ -13,7 +13,7 @@ struct file_info* open_files;
 int maxfiles=10, curfiles=0;
 int verbose = 0;
 int errors = 0; //deal with after
-int maxErrors = 0;
+int maxExit = 0;
 
 int main(int argc, char **argv){
 	int numArgs = 0, start;
@@ -108,7 +108,7 @@ int main(int argc, char **argv){
 			break;
 
 		case 'c':{
-			int index, count=0, subprocessErrors;
+			int index, count=0;
             int oldoptind = optind;
 			for (index = optind - 1; index < argc; index++, count++){
 				if (argv[index][0] == '-' && argv[index][1] == '-')
@@ -117,9 +117,7 @@ int main(int argc, char **argv){
             optind = index;
 			if (count < 4){
 				fprintf(stderr, "Error: --command requires at least 4 options.\n");
-                subprocessErrors++;
-                if (subprocessErrors > maxErrors)
-                    maxErrors = subprocessErrors;
+                errors++;
 				break;
 			}
 			int fcheck=1;
@@ -133,9 +131,7 @@ int main(int argc, char **argv){
             }
             if (openCheck){
                 fprintf(stderr, "Error: File not open\n");
-                subprocessErrors++;
-                if (subprocessErrors > maxErrors)
-                    maxErrors = subprocessErrors;
+                errors++;
                 break;
             }
 			
@@ -154,10 +150,8 @@ int main(int argc, char **argv){
 
 			if (childPID < 0){
 				fprintf(stderr, "Error: Unable to fork child process\n");
-                subprocessErrors++;
-                if (subprocessErrors > maxErrors)
-                    maxErrors = subprocessErrors;
-				break;
+                errors++;
+                break;
 			}
 
 			else if (childPID == 0){
@@ -165,9 +159,7 @@ int main(int argc, char **argv){
 				int b=dup2(open_files[stdinFilePos].descriptor, STDIN_FILENO), c=dup2(open_files[stdoutFilePos].descriptor, STDOUT_FILENO), d=dup2(open_files[stderrFilePos].descriptor, STDERR_FILENO);
                 if (d == -1 || b == -1 || c == -1){
 					fprintf(stderr, "Error: unable to open file");
-                    subprocessErrors++;
-                    if (subprocessErrors > maxErrors)
-                        maxErrors = subprocessErrors;
+                    errors++;
                     break;
                 }
 				execvp(argv[oldoptind + 2], &argv[oldoptind + 2]);
@@ -176,6 +168,8 @@ int main(int argc, char **argv){
 			else{
 				int status;
 				int returnedPid=waitpid(childPID, &status, 0);
+                if (status > maxExit)
+                    maxExit = status;
 
 				break;
 				/*int parentPID = fork();
@@ -218,7 +212,9 @@ int main(int argc, char **argv){
 		
 	}
 	free(open_files);
-    exit(maxErrors);
+    if (maxExit > errors)
+        exit(maxExit);
+    else exit(errors);
 }
 
 
