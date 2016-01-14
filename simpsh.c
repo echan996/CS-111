@@ -102,26 +102,23 @@ int main(int argc, char **argv){
 			break;
 
 		case 'c':{
-			for (int i = optind - 1; i < (optind + 2) && i < argc; i++){
-				for (int x = 0; argv[i][x] != '\0'; x++)
-					if (!isdigit(argv[i][x])){
-					fprintf(stderr, "Error: Invalid file descriptor argument\n");
+			int index, count=0;
+			for (index = optind - 1; index < argc; index++, count++){
+				if (argv[index][0] != '-' || argv[index][1] != '-')
 					break;
-					}
-
-				if ((atoi(argv[i])) >= curfiles){
-					fprintf(stderr, "Error: File not open\n");
-					break;
-				}
 			}
-
-
-			int stdinFilePos = atoi(argv[optind - 1]), stdoutFilePos = atoi(argv[optind]), stderrFilePos = atoi(argv[optind + 1]);
+			if (count < 4){
+				fprintf(stderr, "Error: --command requires at least 4 options.\n");
+				break;
+			}
+			int fcheck=1;
+			
+			/*int stdinFilePos = atoi(argv[optind - 1]), stdoutFilePos = atoi(argv[optind]), stderrFilePos = atoi(argv[optind + 1]);
 			if (!open_files[stdinFilePos].readable || !open_files[stdoutFilePos].writable || !open_files[stderrFilePos].writable){
 				fprintf(stderr, "Error: File permission denied\n");
 				break;
 			}
-			int count = 0;
+			*/
 
 			////////////////////////////////////////////////////////////////////////Executable Processing////////////////////////////////////////////////////////////////////
 
@@ -140,6 +137,7 @@ int main(int argc, char **argv){
 				dup2(open_files[stdoutFilePos].descriptor, STDOUT_FILENO);
 				dup2(open_files[stderrFilePos].descriptor, STDERR_FILENO);
 				execvp(argv[optind+2], argv);
+
 			}
 			else{
 				int status;
