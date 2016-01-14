@@ -123,7 +123,7 @@ int main(int argc, char **argv){
 			////////////////////////////////////////////////////////////////////////Executable Processing////////////////////////////////////////////////////////////////////
 
 			int childPID = fork();
-			int fd[2];
+			//int fd[2];
 			//pipe(fd);
 
 			if (childPID < 0){
@@ -133,15 +133,15 @@ int main(int argc, char **argv){
 
 			else if (childPID == 0){
 				//close(fd[1]);
-				dup2(open_files[stdinFilePos], STDIN_FILENO);
-				dup2(open_files[stdoutFilePos].descriptor, STDOUT_FILENO);
-				dup2(open_files[stderrFilePos].descriptor, STDERR_FILENO);
-				execvp(argv[optind+2], argv);
+				int b=dup2(open_files[].descriptor, STDIN_FILENO), c=dup2(open_files[stdoutFilePos].descriptor, STDOUT_FILENO), d=dup2(open_files[stderrFilePos].descriptor, STDERR_FILENO);
+				if (a == -1 || b == -1 || c == -1)
+					fprintf(stderr, "Error: unable to open file");
+				execvp(argv[index], &argv[index]);
 
 			}
 			else{
 				int status;
-				int returnedPid=waitpid(childID, &status, 0);
+				int returnedPid=waitpid(childPID, &status, 0);
 
 				break;
 				/*int parentPID = fork();
