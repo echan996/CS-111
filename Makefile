@@ -27,6 +27,7 @@ $(DISTDIR).tar.gz: $(DIST_SOURCES) check-dist
 	mv $@.tmp $@
 
 check: 
+	sh test.sh
 clean:
 	rm -fr *.o *~ *.bak *.tar.gz core *.core *.tmp simpsh $(DISTDIR)
 
