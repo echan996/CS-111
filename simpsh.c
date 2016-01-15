@@ -17,6 +17,8 @@ int maxExit = 0;
 
 int main(int argc, char **argv){
 	int numArgs = 0, start;
+	int* p_threads = malloc(sizeof(int)*(argc / 4));
+	int numthreads = 0;
 	open_files = (struct file_info*)malloc(maxfiles*sizeof(struct file_info));
 	static struct option long_options[] = {
 			{ "rdonly", required_argument, 0, 'a' },
@@ -30,6 +32,7 @@ int main(int argc, char **argv){
 	int i = 0, a;
 	while ((option = (char)getopt_long(argc, argv, "", long_options, &i)) != -1)
 	{
+
 		if (verbose){
 			fprintf(stdout, "%s", long_options[i].name);
 			if (optarg){
@@ -144,17 +147,17 @@ int main(int argc, char **argv){
 
 			////////////////////////////////////////////////////////////////////////Executable Processing////////////////////////////////////////////////////////////////////
 
-			int childPID = fork();
+			p_threads[numthreads] = fork();
 			//int fd[2];
 			//pipe(fd);
 
-			if (childPID < 0){
+			if (p_threads[numthreads] < 0){
 				fprintf(stderr, "Error: Unable to fork child process\n");
                 errors++;
                 break;
 			}
 
-			else if (childPID == 0){
+			else if (p_threads[numthreads] == 0){
 				//close(fd[1]);
 				int b=dup2(open_files[stdinFilePos].descriptor, STDIN_FILENO), c=dup2(open_files[stdoutFilePos].descriptor, STDOUT_FILENO), d=dup2(open_files[stderrFilePos].descriptor, STDERR_FILENO);
                 if (d == -1 || b == -1 || c == -1){
@@ -163,15 +166,10 @@ int main(int argc, char **argv){
                     break;
                 }
 				argv[optind] = '\0';
+				numthreads++;
 				execvp(argv[oldoptind + 2], &argv[oldoptind + 2]);
 
 			}
-			else{
-				int status;
-				int returnedPid=waitpid(childPID, &status, 0);
-                if (status > maxExit)
-                    maxExit = status;
-
 				break;
 				/*int parentPID = fork();
 				if (parentPID == 0){
@@ -196,7 +194,7 @@ int main(int argc, char **argv){
 						free(a);
 					}
 				}*/
-			}
+			
 		
 
 		}
@@ -211,6 +209,14 @@ int main(int argc, char **argv){
 
 
 		
+	}
+
+	int status;
+	for (int i = 0; i < numthreads; i++){
+		int returnedPid = waitpid(p_threads[i], &status, 0);
+		if (status > maxExit)
+			maxExit = status;
+		fprintf(stdout, "Thread number %d was closed\n", returnedPid);
 	}
 	free(open_files);
     if (maxExit > errors)
