@@ -162,7 +162,6 @@ int main(int argc, char **argv){
                     errors++;
                     break;
                 }
-				argv[optind] = '\0';
 				execvp(argv[oldoptind + 2], &argv[oldoptind + 2]);
 
 			}
