@@ -141,7 +141,16 @@ int main(int argc, char **argv){
 				break;
 			}
 			*/
+			int count = 0;
+			for (int e = optind + 2; e < argc && (argv[e][0] != '-' && argv[e][1] != '-'); e++, count++){
+				continue;
+			}
 
+			char ** a = (char **)malloc(sizeof(char*)*count);
+
+			for (int e = optind + 2, counter = 0; counter < count; e++){
+				a[counter] = argv[e];
+			}
 			////////////////////////////////////////////////////////////////////////Executable Processing////////////////////////////////////////////////////////////////////
 
 			int childPID = fork();
@@ -162,7 +171,7 @@ int main(int argc, char **argv){
                     errors++;
                     break;
                 }
-				execvp(argv[oldoptind + 2], &argv[oldoptind + 2]);
+				execvp(a[0], a);
 
 			}
 			else{
