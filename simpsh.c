@@ -213,9 +213,7 @@ int main(int argc, char **argv){
 		
 	}
 	free(open_files);
-    if (maxExit > errors)
-        exit(maxExit);
-    else exit(errors);
-}
+    exit(maxExit);
+ }
 
 
