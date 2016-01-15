@@ -13,8 +13,7 @@ TESTS = $(test.sh)
 SIMPSH_OBJECTS = $(subst .c,.o,$(SIMPSH_SOURCES))
 
 DIST_SOURCES = \
-  $(SIMPSH_SOURCES) Makefile \
-  $(TESTS) README
+  $(SIMPSH_SOURCES) Makefile test.sh README
 
 simpsh: $(SIMPSH_OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $(SIMPSH_OBJECTS)
