@@ -14,6 +14,7 @@ int maxfiles=10, curfiles=0;
 int verbose = 0;
 int errors = 0; //deal with after
 int maxExit = 0;
+int append=0, cloexec=0, creat=0, directory=0, dsyc=0, excl=0, nofollow=0, nonblock=0, rsync=0, sync=0,trunc=0;
 
 int main(int argc, char **argv){
 	int numArgs = 0, start;
@@ -23,6 +24,18 @@ int main(int argc, char **argv){
 			{ "wronly", required_argument, 0, 'b' },
 			{ "command", required_argument, 0, 'c' },
 			{ "verbose", no_argument, 0, 'd' },
+			{ "append", no_argument, 0, 'e' },
+			{ "cloexec", no_argument, 0, 'f' },
+			{ "creat", no_argument, 0, 'g' },
+			{ "directory", no_argument, 0, 'h' },
+			{ "dsyc", no_argument,0,'i' },
+			{ "excl", no_argument,0, 'j' },
+			{ "nofollow", no_argument, 0, 'k' },
+			{ "nonblock", no_argument, 0, 'l' },
+			{ "rsync", no_argument, 0, 'm' },
+			{ "sync", no_argument, 0, 'n' },
+			{ "trunc", no_argument, 0, 'o' },
+			{ "rdwr", required_argument, 0, 'p' },
 			{ 0, 0, 0, 0 }
 	};
 
@@ -56,7 +69,8 @@ int main(int argc, char **argv){
 				}
 			}
 
-			a = open(optarg, O_RDONLY);
+			a = open(optarg, O_RDONLY | (O_APPEND & append) | (O_CLOEXEC & cloexec) | (O_CREAT & creat) | (O_DIRECTORY & directory) | (O_DSYC & dsyc) | (O_EXCL & excl) | (O_NOFOLLOW & nofollow)
+			| (O_NONBLOCK & nonblock) | (O_RSYNC & rsync) | (O_SYNC & sync) | (O_TRUNC & trunc));
 
 			if (a == -1){
 				errors++;
@@ -91,7 +105,8 @@ int main(int argc, char **argv){
 			}
 
 
-			a = open(optarg, O_WRONLY);
+			a = open(optarg, O_WRONLY | (O_APPEND & append) | (O_CLOEXEC & cloexec) | (O_CREAT & creat) | (O_DIRECTORY & directory) | (O_DSYC & dsyc) | (O_EXCL & excl) | (O_NOFOLLOW & nofollow)
+				| (O_NONBLOCK & nonblock) | (O_RSYNC & rsync) | (O_SYNC & sync) | (O_TRUNC & trunc));
 
 			if (a == -1){
 				errors++;
@@ -106,7 +121,40 @@ int main(int argc, char **argv){
 			curfiles++;
 
 			break;
+		case 'o':
+			if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
+			{
+				optind--;
+				fprintf(stderr, "Error: Wrong number of operands\n");
+				errors++;
+				break;
+			}
+			if (curfiles >= maxfiles){
+				open_files = (struct file_info*)realloc(open_files, (maxfiles *= 2)*sizeof(struct file_info));
+				if (open_files == NULL){
+					fprintf(stderr, "Error: Unable to reallocate memory; file was not opened.\n");
+					errors++;
+					break;
+				}
+			}
 
+
+			a = open(optarg, O_RDWR | (O_APPEND & append) | (O_CLOEXEC & cloexec) | (O_CREAT & creat) | (O_DIRECTORY & directory) | (O_DSYC & dsyc) | (O_EXCL & excl) | (O_NOFOLLOW & nofollow)
+				| (O_NONBLOCK & nonblock) | (O_RSYNC & rsync) | (O_SYNC & sync) | (O_TRUNC & trunc));
+
+			if (a == -1){
+				errors++;
+				fprintf(stderr, "Error: Unable to create file\n");
+				errors++;
+				break;
+			}
+
+			open_files[curfiles].descriptor = a;
+			open_files[curfiles].readable = 1;
+			open_files[curfiles].writable = 1;
+			curfiles++;
+
+			break;
 		case 'c':{
 			int index, count=0;
             int oldoptind = optind;
@@ -204,7 +252,40 @@ int main(int argc, char **argv){
 			verbose = 1;
 			break;
 
-
+		//dealing with file opening options.
+		case 'e':
+			append = -1;
+			break;
+		case 'f':
+			cloexec = -1;
+			break;
+		case 'g':
+			creat = -1;
+			break;
+		case 'h':
+			directory = -1;
+			break;
+		case 'i':
+			dsyc = -1;
+			break;
+		case 'j':
+			excl = -1;
+			break;
+		case 'k':
+			nofollow = -1;
+			break;
+		case 'l':
+			nonblock = -1;
+			break;
+		case 'm':
+			rsync = -1;
+			break;
+		case 'n':
+			sync = -1;
+			break;
+		case 'o':
+			trunc = -1;
+			break;
 		default:
 			break;
 		}
