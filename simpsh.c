@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 struct file_info{
     int descriptor, readable, writable, open;
@@ -15,6 +16,10 @@ int verbose = 0;
 int errors = 0; //deal with after
 int maxExit = 0;
 int append=0, cloexec=0, creat=0, directory=0, dsyc=0, excl=0, nofollow=0, nonblock=0, rsync=0, sync=0,trunc=0;
+void sig_handler(int signum){
+	fprintf(stderr, "%d caught\n", signum);
+	exit(signum);
+};
 
 int main(int argc, char **argv){
 	int numArgs = 0, start;
@@ -38,6 +43,9 @@ int main(int argc, char **argv){
 			{ "rdwr", required_argument, 0, 'p' },
 			{ "close", required_argument, 0, 'q' },
 			{ "abort", no_argument, 0, 'r' },
+			{ "catch", required_argument, 0, 's' },
+			{ "ignore", required_argument, 0, 't' },
+			{ "default", required_argument, 0, 'u' },
 			{ 0, 0, 0, 0 }
 	};
 
@@ -302,6 +310,16 @@ int main(int argc, char **argv){
 			int *a = NULL;
 			int b = *a;
 			break;
+		case 's'://catch
+			signal(atoi(optarg), sig_handler);
+			break;
+		case 't'://ignore
+			signal(atoi(optarg), SIG_IGN);
+			break;
+		case 'u'://default
+			signal(atoi(optarg), SIG_DFL);
+			break;
+
 		default:
 			break;
 		}
@@ -314,3 +332,4 @@ int main(int argc, char **argv){
  }
 
 
+	
