@@ -46,6 +46,7 @@ int main(int argc, char **argv){
 			{ "catch", required_argument, 0, 's' },
 			{ "ignore", required_argument, 0, 't' },
 			{ "default", required_argument, 0, 'u' },
+			{ "pause", no_argument, 0, 'v' },
 			{ 0, 0, 0, 0 }
 	};
 
@@ -94,6 +95,7 @@ int main(int argc, char **argv){
 			open_files[curfiles].writable = 0;
 			open_files[curfiles].open = 1;
 			curfiles++;
+			append = cloexec = creat = directory = dsyc = excl = nofollow = nonblock = rsync = sync = trunc = 0;
 			//some storage of the open value into some global int array.
 			break;
 		case 'b':
@@ -131,7 +133,7 @@ int main(int argc, char **argv){
 			open_files[curfiles].writable = 1;
 			open_files[curfiles].open = 1;
 			curfiles++;
-
+			append = cloexec = creat = directory = dsyc = excl = nofollow = nonblock = rsync = sync = trunc = 0;
 			break;
 		case 'p':
 			if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
@@ -166,7 +168,7 @@ int main(int argc, char **argv){
 			open_files[curfiles].writable = 1;
 			open_files[curfiles].open = 1;
 			curfiles++;
-
+			append = cloexec = creat = directory = dsyc = excl = nofollow = nonblock = rsync = sync = trunc = 0;
 			break;
 		case 'c':{
 			int index, count=0;
@@ -319,7 +321,9 @@ int main(int argc, char **argv){
 		case 'u'://default
 			signal(atoi(optarg), SIG_DFL);
 			break;
-
+		case 'v':
+			pause();
+			break;
 		default:
 			break;
 		}
