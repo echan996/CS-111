@@ -7,7 +7,7 @@
 #include <sys/wait.h>
 
 struct file_info{
-    int descriptor, readable, writable;
+    int descriptor, readable, writable, open;
 };
 struct file_info* open_files;
 int maxfiles=10, curfiles=0;
@@ -36,6 +36,8 @@ int main(int argc, char **argv){
 			{ "sync", no_argument, 0, 'n' },
 			{ "trunc", no_argument, 0, 'o' },
 			{ "rdwr", required_argument, 0, 'p' },
+			{ "close", required_argument, 0, 'q' },
+			{ "abort", no_argument, 0, 'r' },
 			{ 0, 0, 0, 0 }
 	};
 
@@ -82,6 +84,7 @@ int main(int argc, char **argv){
 			open_files[curfiles].descriptor = a;
 			open_files[curfiles].readable = 1;
 			open_files[curfiles].writable = 0;
+			open_files[curfiles].open = 1;
 			curfiles++;
 			//some storage of the open value into some global int array.
 			break;
@@ -118,10 +121,11 @@ int main(int argc, char **argv){
 			open_files[curfiles].descriptor = a;
 			open_files[curfiles].readable = 0;
 			open_files[curfiles].writable = 1;
+			open_files[curfiles].open = 1;
 			curfiles++;
 
 			break;
-		case 'o':
+		case 'p':
 			if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
 			{
 				optind--;
@@ -152,6 +156,7 @@ int main(int argc, char **argv){
 			open_files[curfiles].descriptor = a;
 			open_files[curfiles].readable = 1;
 			open_files[curfiles].writable = 1;
+			open_files[curfiles].open = 1;
 			curfiles++;
 
 			break;
@@ -172,7 +177,7 @@ int main(int argc, char **argv){
             
             int openCheck = 0;
             for (int i = oldoptind - 1; i < (oldoptind + 2) && i < argc; i++){
-                if (atoi(argv[i]) >= curfiles){
+                if (atoi(argv[i]) >= curfiles || open_files[atoi(argv[i])].open==0){
                     openCheck = 1;
                     break;
                 }
@@ -285,6 +290,17 @@ int main(int argc, char **argv){
 			break;
 		case 'o':
 			trunc = -1;
+			break;
+		case 'q':
+			if (atoi(optarg) >= curfiles){
+				fprintf(stderr, "Error: File never opened\n");
+				break;
+			}
+			open_files[atoi(optarg)].open = 0;
+			break;
+		case 'r':
+			int *a = NULL;
+			int b = *a;
 			break;
 		default:
 			break;
