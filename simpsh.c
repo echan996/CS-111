@@ -335,8 +335,7 @@ int main(int argc, char **argv){
 			break;
 		case 'r':
             verbosePrint(option, optind, argv, i, argc);
-			int *a = NULL;
-			int b = *a;
+            raise(SIGSEGV);
 			break;
 		case 's'://catch
             verbosePrint(option, optind, argv, i, argc);
