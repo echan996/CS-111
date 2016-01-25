@@ -66,7 +66,8 @@ void verbosePrint(char option, int optind, char **argv, int longOptInd, int argc
         // then print out current option name and operands
         fprintf(stdout, "%s", long_options[longOptInd].name); // print out the option name
         if (optarg){ // null if no arguments
-            for (int i = optind - 1; i < argc && (argv[i][0] != '-' || argv[i][1] != '-'); i++)
+            int i;
+            for (i = optind - 1; i < argc && (argv[i][0] != '-' || argv[i][1] != '-'); i++)
                 fprintf(stdout, " %s", argv[i]);
         }
         fprintf(stdout, "\n");
@@ -206,8 +207,8 @@ int main(int argc, char **argv){
 			}
 			
             
-            int openCheck = 0;
-            for (int i = oldoptind - 1; i < (oldoptind + 2) && i < argc; i++){
+            int openCheck = 0, i;
+            for (i = oldoptind - 1; i < (oldoptind + 2) && i < argc; i++){
                 if (atoi(argv[i]) >= curfiles || open_files[atoi(argv[i])].open==0){
                     openCheck = 1;
                     break;
