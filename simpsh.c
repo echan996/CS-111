@@ -48,23 +48,25 @@ static struct option long_options[] = {
 void verbosePrint(char option, int optind, char **argv, int longOptInd, int argc){
     if (verbose){ // verbose is turned on --> print out the commands
         int e, j;
-        for (e = optind; e > -1 && argv[e][0] != '-' && argv[e][1] != '-'; e++){ // find the index of the option within argv
+        for (e = optind - 1; e > -1 && argv[e][0] != '-' && argv[e][1] != '-'; e--){ // find the index of the option within argv
             continue;
         }
         int index = e;
         if (option == 'a' || option == 'b' || option == 'p'){ // need to add pipe
             // go back until you find a non-file flag
-            for (j = index - 1; j > -1 && (argv[j] == "--append" || argv[j] == "--cloexec" || argv[j] == "--creat" || argv[j] == "--directory" || argv[j] == "--dsync" || argv[j] == "--excl" || argv[j] == "--nofollow" || argv[j] == "--nonblock" || argv[j] == "--rsync" || argv[j] == "--sync" || argv[j] == "--trunc"); j--){ // j indexes through argv
+            for (j = index - 1; j > 0 && ((strcmp(argv[j], "--append") == 0) || (strcmp(argv[j], "--cloexec") == 0) || (strcmp(argv[j], "--creat") == 0) || (strcmp(argv[j], "--directory") == 0) || (strcmp(argv[j], "--dsync") == 0) || (strcmp(argv[j], "--excl") == 0) || (strcmp(argv[j], "--nofollow") == 0) || (strcmp(argv[j], "--nonblock") == 0) || (strcmp(argv[j], "--rsync") == 0) || (strcmp(argv[j], "--sync") == 0) || (strcmp(argv[j], "--trunc") == 0)); j--){ // j indexes through argv
                 continue;
             } // j stops at the element in argv that isn't a file flag
+            
             j++;
+            
             // print out all of the file flags starting from j until index
             for (; j < index; j++){
                 fprintf(stdout, "%s ", argv[j]);
             }
         }
         // then print out current option name and operands
-        fprintf(stdout, "%s", long_options[longOptInd].name); // print out the option name
+        fprintf(stdout, "--%s", long_options[longOptInd].name); // print out the option name
         if (optarg){ // null if no arguments
             int i;
             for (i = optind - 1; i < argc && (argv[i][0] != '-' || argv[i][1] != '-'); i++)
@@ -286,8 +288,8 @@ int main(int argc, char **argv){
 
 		}
 		case 'd':
-            verbosePrint(option, optind, argv, i, argc);
 			verbose = 1;
+            verbosePrint(option, optind, argv, i, argc);
 			break;
 
 		//dealing with file opening options.
