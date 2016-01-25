@@ -15,55 +15,75 @@ int maxfiles=10, curfiles=0;
 int verbose = 0;
 int errors = 0; //deal with after
 int maxExit = 0;
-int append=0, cloexec=0, creat=0, directory=0, dsyc=0, excl=0, nofollow=0, nonblock=0, rsync=0, sync=0,trunc=0;
+int append=0, cloexec=0, create=0, directory=0, dsyc=0, excl=0, nofollow=0, nonblock=0, rsync=0, syc=0,trun=0;
 void sig_handler(int signum){
 	fprintf(stderr, "%d caught\n", signum);
 	exit(signum);
 };
+static struct option long_options[] = {
+    { "rdonly", required_argument, 0, 'a' },
+    { "wronly", required_argument, 0, 'b' },
+    { "command", required_argument, 0, 'c' },
+    { "verbose", no_argument, 0, 'd' },
+    { "append", no_argument, 0, 'e' },
+    { "cloexec", no_argument, 0, 'f' },
+    { "creat", no_argument, 0, 'g' },
+    { "directory", no_argument, 0, 'h' },
+    { "dsyc", no_argument,0,'i' },
+    { "excl", no_argument,0, 'j' },
+    { "nofollow", no_argument, 0, 'k' },
+    { "nonblock", no_argument, 0, 'l' },
+    { "rsync", no_argument, 0, 'm' },
+    { "sync", no_argument, 0, 'n' },
+    { "trunc", no_argument, 0, 'o' },
+    { "rdwr", required_argument, 0, 'p' },
+    { "close", required_argument, 0, 'q' },
+    { "abort", no_argument, 0, 'r' },
+    { "catch", required_argument, 0, 's' },
+    { "ignore", required_argument, 0, 't' },
+    { "default", required_argument, 0, 'u' },
+    { 0, 0, 0, 0 }
+};
+
+void verbosePrint(char option, int optind, char **argv, int longOptInd, int argc){
+    if (verbose){ // verbose is turned on --> print out the commands
+        int e, j;
+        for (e = optind; e > -1 && argv[e][0] != '-' && argv[e][1] != '-'; e++){ // find the index of the option within argv
+            continue;
+        }
+        int index = e;
+        if (option == 'a' || option == 'b' || option == 'p'){ // need to add pipe
+            // go back until you find a non-file flag
+            for (j = index - 1; j > -1 && (argv[j] == "--append" || argv[j] == "--cloexec" || argv[j] == "--creat" || argv[j] == "--directory" || argv[j] == "--dsync" || argv[j] == "--excl" || argv[j] == "--nofollow" || argv[j] == "--nonblock" || argv[j] == "--rsync" || argv[j] == "--sync" || argv[j] == "--trunc"); j--){ // j indexes through argv
+                continue;
+            } // j stops at the element in argv that isn't a file flag
+            j++;
+            // print out all of the file flags starting from j until index
+            for (; j < index; j++){
+                fprintf(stdout, "%s ", argv[j]);
+            }
+        }
+        // then print out current option name and operands
+        fprintf(stdout, "%s", long_options[longOptInd].name); // print out the option name
+        if (optarg){ // null if no arguments
+            for (int i = optind - 1; i < argc && (argv[i][0] != '-' || argv[i][1] != '-'); i++)
+                fprintf(stdout, " %s", argv[i]);
+        }
+        fprintf(stdout, "\n");
+    }
+}
 
 int main(int argc, char **argv){
 	int numArgs = 0, start;
 	open_files = (struct file_info*)malloc(maxfiles*sizeof(struct file_info));
-	static struct option long_options[] = {
-			{ "rdonly", required_argument, 0, 'a' },
-			{ "wronly", required_argument, 0, 'b' },
-			{ "command", required_argument, 0, 'c' },
-			{ "verbose", no_argument, 0, 'd' },
-			{ "append", no_argument, 0, 'e' },
-			{ "cloexec", no_argument, 0, 'f' },
-			{ "creat", no_argument, 0, 'g' },
-			{ "directory", no_argument, 0, 'h' },
-			{ "dsyc", no_argument,0,'i' },
-			{ "excl", no_argument,0, 'j' },
-			{ "nofollow", no_argument, 0, 'k' },
-			{ "nonblock", no_argument, 0, 'l' },
-			{ "rsync", no_argument, 0, 'm' },
-			{ "sync", no_argument, 0, 'n' },
-			{ "trunc", no_argument, 0, 'o' },
-			{ "rdwr", required_argument, 0, 'p' },
-			{ "close", required_argument, 0, 'q' },
-			{ "abort", no_argument, 0, 'r' },
-			{ "catch", required_argument, 0, 's' },
-			{ "ignore", required_argument, 0, 't' },
-			{ "default", required_argument, 0, 'u' },
-			{ "pause", no_argument, 0, 'v' },
-			{ 0, 0, 0, 0 }
-	};
 
 	char option = 0;
 	int i = 0, a;
 	while ((option = (char)getopt_long(argc, argv, "", long_options, &i)) != -1)
 	{
-		if (verbose){
-			fprintf(stdout, "%s", long_options[i].name);
-			if (optarg){
-				for (int i = optind - 1; i < argc && (argv[i][0] != '-' || argv[i][1] != '-'); i++)
-					fprintf(stdout, " %s", argv[i]);
-			}
-			fprintf(stdout, "\n");
-		}//change this in a bit
 		switch (option){
 		case 'a':
+            verbosePrint(option, optind, argv, i, argc);
 			if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
 			{
 				optind--;
@@ -80,8 +100,8 @@ int main(int argc, char **argv){
 				}
 			}
 
-			a = open(optarg, O_RDONLY | (O_APPEND & append) | (O_CLOEXEC & cloexec) | (O_CREAT & creat) | (O_DIRECTORY & directory) | (O_DSYC & dsyc) | (O_EXCL & excl) | (O_NOFOLLOW & nofollow)
-			| (O_NONBLOCK & nonblock) | (O_RSYNC & rsync) | (O_SYNC & sync) | (O_TRUNC & trunc));
+			a = open(optarg, O_RDONLY | (O_APPEND & append) | (O_CLOEXEC & cloexec) | (O_CREAT & create) | (O_DIRECTORY & directory) | (O_DSYNC & dsyc) | (O_EXCL & excl) | (O_NOFOLLOW & nofollow)
+			| (O_NONBLOCK & nonblock) | (O_RSYNC & rsync) | (O_SYNC & syc) | (O_TRUNC & trun));
 
 			if (a == -1){
 				errors++;
@@ -95,12 +115,11 @@ int main(int argc, char **argv){
 			open_files[curfiles].writable = 0;
 			open_files[curfiles].open = 1;
 			curfiles++;
-			append = cloexec = creat = directory = dsyc = excl = nofollow = nonblock = rsync = sync = trunc = 0;
+			append = cloexec = create = directory = dsyc = excl = nofollow = nonblock = rsync = syc = trun = 0;
 			//some storage of the open value into some global int array.
 			break;
 		case 'b':
-
-
+            verbosePrint(option, optind, argv, i, argc);
 			if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
 			{
 				optind--;
@@ -118,8 +137,8 @@ int main(int argc, char **argv){
 			}
 
 
-			a = open(optarg, O_WRONLY | (O_APPEND & append) | (O_CLOEXEC & cloexec) | (O_CREAT & creat) | (O_DIRECTORY & directory) | (O_DSYC & dsyc) | (O_EXCL & excl) | (O_NOFOLLOW & nofollow)
-				| (O_NONBLOCK & nonblock) | (O_RSYNC & rsync) | (O_SYNC & sync) | (O_TRUNC & trunc));
+			a = open(optarg, O_WRONLY | (O_APPEND & append) | (O_CLOEXEC & cloexec) | (O_CREAT & create) | (O_DIRECTORY & directory) | (O_DSYNC & dsyc) | (O_EXCL & excl) | (O_NOFOLLOW & nofollow)
+				| (O_NONBLOCK & nonblock) | (O_RSYNC & rsync) | (O_SYNC & syc) | (O_TRUNC & trun));
 
 			if (a == -1){
 				errors++;
@@ -133,9 +152,10 @@ int main(int argc, char **argv){
 			open_files[curfiles].writable = 1;
 			open_files[curfiles].open = 1;
 			curfiles++;
-			append = cloexec = creat = directory = dsyc = excl = nofollow = nonblock = rsync = sync = trunc = 0;
+			append = cloexec = create = directory = dsyc = excl = nofollow = nonblock = rsync = syc = trun = 0;
 			break;
 		case 'p':
+            verbosePrint(option, optind, argv, i, argc);
 			if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
 			{
 				optind--;
@@ -153,8 +173,8 @@ int main(int argc, char **argv){
 			}
 
 
-			a = open(optarg, O_RDWR | (O_APPEND & append) | (O_CLOEXEC & cloexec) | (O_CREAT & creat) | (O_DIRECTORY & directory) | (O_DSYC & dsyc) | (O_EXCL & excl) | (O_NOFOLLOW & nofollow)
-				| (O_NONBLOCK & nonblock) | (O_RSYNC & rsync) | (O_SYNC & sync) | (O_TRUNC & trunc));
+			a = open(optarg, O_RDWR | (O_APPEND & append) | (O_CLOEXEC & cloexec) | (O_CREAT & create) | (O_DIRECTORY & directory) | (O_DSYNC & dsyc) | (O_EXCL & excl) | (O_NOFOLLOW & nofollow)
+				| (O_NONBLOCK & nonblock) | (O_RSYNC & rsync) | (O_SYNC & syc) | (O_TRUNC & trun));
 
 			if (a == -1){
 				errors++;
@@ -168,9 +188,10 @@ int main(int argc, char **argv){
 			open_files[curfiles].writable = 1;
 			open_files[curfiles].open = 1;
 			curfiles++;
-			append = cloexec = creat = directory = dsyc = excl = nofollow = nonblock = rsync = sync = trunc = 0;
+			append = cloexec = create = directory = dsyc = excl = nofollow = nonblock = rsync = syc = trun = 0;
 			break;
 		case 'c':{
+            verbosePrint(option, optind, argv, i, argc);
 			int index, count=0;
             int oldoptind = optind;
 			for (index = optind - 1; index < argc; index++, count++){
@@ -264,6 +285,7 @@ int main(int argc, char **argv){
 
 		}
 		case 'd':
+            verbosePrint(option, optind, argv, i, argc);
 			verbose = 1;
 			break;
 
@@ -275,7 +297,7 @@ int main(int argc, char **argv){
 			cloexec = -1;
 			break;
 		case 'g':
-			creat = -1;
+			create = -1;
 			break;
 		case 'h':
 			directory = -1;
@@ -296,10 +318,10 @@ int main(int argc, char **argv){
 			rsync = -1;
 			break;
 		case 'n':
-			sync = -1;
+			syc = -1;
 			break;
 		case 'o':
-			trunc = -1;
+			trun = -1;
 			break;
 		case 'q':
 			if (atoi(optarg) >= curfiles){
@@ -309,16 +331,20 @@ int main(int argc, char **argv){
 			open_files[atoi(optarg)].open = 0;
 			break;
 		case 'r':
+            verbosePrint(option, optind, argv, i, argc);
 			int *a = NULL;
 			int b = *a;
 			break;
 		case 's'://catch
+            verbosePrint(option, optind, argv, i, argc);
 			signal(atoi(optarg), sig_handler);
 			break;
 		case 't'://ignore
+            verbosePrint(option, optind, argv, i, argc);
 			signal(atoi(optarg), SIG_IGN);
 			break;
 		case 'u'://default
+            verbosePrint(option, optind, argv, i, argc);
 			signal(atoi(optarg), SIG_DFL);
 			break;
 		case 'v':
