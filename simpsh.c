@@ -54,7 +54,7 @@ void verbosePrint(char option, int optind, char **argv, int longOptInd, int argc
         int index = e;
         if (option == 'a' || option == 'b' || option == 'p'){ // need to add pipe
             // go back until you find a non-file flag
-            for (j = index - 1; j > 0 && ((strcmp(argv[j], "--append") == 0) || (strcmp(argv[j], "--cloexec") == 0) || (strcmp(argv[j], "--creat") == 0) || (strcmp(argv[j], "--directory") == 0) || (strcmp(argv[j], "--dsync") == 0) || (strcmp(argv[j], "--excl") == 0) || (strcmp(argv[j], "--nofollow") == 0) || (strcmp(argv[j], "--nonblock") == 0) || (strcmp(argv[j], "--rsync") == 0) || (strcmp(argv[j], "--sync") == 0) || (strcmp(argv[j], "--trunc") == 0)); j--){ // j indexes through argv
+            for (j = index - 1; j > 0 && (!(strcmp(argv[j], "--append")) || !(strcmp(argv[j], "--cloexec")) || !(strcmp(argv[j], "--creat")) || !(strcmp(argv[j], "--directory")) || !(strcmp(argv[j], "--dsync")) || !(strcmp(argv[j], "--excl")) || !(strcmp(argv[j], "--nofollow")) || !(strcmp(argv[j], "--nonblock")) || !(strcmp(argv[j], "--rsync")) || !(strcmp(argv[j], "--sync")) || !(strcmp(argv[j], "--trunc"))); j--){ // j indexes through argv
                 continue;
             } // j stops at the element in argv that isn't a file flag
             
