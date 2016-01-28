@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -10,15 +12,20 @@
 struct file_info{
     int descriptor, readable, writable, open;
 };
+struct thread_info{
+	int start_ind, end_ind;
+	pid_t threadnum;
+};
 struct file_info* open_files;
-int maxfiles=10, curfiles=0;
+struct thread_info* running_threads;
+int maxfiles=10, curfiles=0, maxthreads=10, curthreads=0;
 int verbose = 0;
 int errors = 0; //deal with after
 int maxExit = 0;
 int append=0, cloexec=0, create=0, directory=0, dsyc=0, excl=0, nofollow=0, nonblock=0, rsync=0, syc=0,trun=0;
 void sig_handler(int signum){
 	fprintf(stderr, "%d caught\n", signum);
-	exit(signum);
+	_exit(signum);
 };
 static struct option long_options[] = {
     { "rdonly", required_argument, 0, 'a' },
@@ -42,6 +49,8 @@ static struct option long_options[] = {
     { "catch", required_argument, 0, 's' },
     { "ignore", required_argument, 0, 't' },
     { "default", required_argument, 0, 'u' },
+	{ "pause", no_argument, 0, 'v' },
+	{ "wait", no_argument, 0, 'w' },
     { 0, 0, 0, 0 }
 };
 
@@ -79,7 +88,7 @@ void verbosePrint(char option, int optind, char **argv, int longOptInd, int argc
 int main(int argc, char **argv){
 	int numArgs = 0, start;
 	open_files = (struct file_info*)malloc(maxfiles*sizeof(struct file_info));
-
+	running_threads = (struct thread_info*)malloc(maxthreads*sizeof(struct thread_info));
 	char option = 0;
 	int i = 0, a;
 	while ((option = (char)getopt_long(argc, argv, "", long_options, &i)) != -1)
@@ -193,6 +202,8 @@ int main(int argc, char **argv){
 			curfiles++;
 			append = cloexec = create = directory = dsyc = excl = nofollow = nonblock = rsync = syc = trun = 0;
 			break;
+
+			//COMMAND
 		case 'c':{
             verbosePrint(option, optind, argv, i, argc);
 			int index, count=0;
@@ -250,12 +261,24 @@ int main(int argc, char **argv){
                     break;
                 }
 				argv[optind] = '\0';
+
+				if (curfiles >= maxfiles){
+					open_files = (struct file_info*)realloc(open_files, (maxfiles *= 2)*sizeof(struct file_info));
+					if (open_files == NULL){
+						fprintf(stderr, "Error: Unable to reallocate memory; file was not opened.\n");
+						errors++;
+						break;
+					}
+				}
+				running_threads[curfiles].start_ind = oldoptind + 2;
+				running_threads[curfiles].end_ind = optind;
+				running_threads[curfiles].threadnum = childPID;
 				execvp(argv[oldoptind+2], &argv[oldoptind+2]);
 
 			}
 			else{
 				int status;
-				int returnedPid=waitpid(childPID, &status, WNOHANG);
+				int returnedPid=waitpid(childPID, &status, 0);
                 if (status > maxExit)
                     maxExit = status;
 
@@ -327,11 +350,12 @@ int main(int argc, char **argv){
 			trun = -1;
 			break;
 		case 'q':
-			if (atoi(optarg) >= curfiles){
-				fprintf(stderr, "Error: File never opened\n");
+			if (atoi(optarg) >= curfiles || open_files[atoi(optarg)].open==0){
+				fprintf(stderr, "Error: File not opened\n");
 				break;
 			}
 			open_files[atoi(optarg)].open = 0;
+			close(open_files[atoi(optarg)].descriptor);
 			break;
 		case 'r':
             verbosePrint(option, optind, argv, i, argc);
@@ -350,8 +374,17 @@ int main(int argc, char **argv){
 			signal(atoi(optarg), SIG_DFL);
 			break;
 		case 'v':
+			verbosePrint(option, optind, argv, i, argc);
 			pause();
 			break;
+		case 'w':
+			for (int i = 0; i < curfiles; i++){
+				if (open_files[i].open)
+					close(open_files[i].descriptor);
+			}
+			for ()
+			break;
+			
 		default:
 			break;
 		}
