@@ -382,7 +382,17 @@ int main(int argc, char **argv){
 				if (open_files[i].open)
 					close(open_files[i].descriptor);
 			}
-			for ()
+			for (int i = 0; i < curthreads; i++){
+				int status;
+				pid_t thrd = waitpid(-1, &status, 0);
+				for (int i = 0; i < curthreads;i++)
+					if (thrd == running_threads[i].threadnum){
+					fprintf(stdout, "%d", status);
+					for (int b = running_threads[i].start_ind; b < running_threads[i].end_ind; i++)
+						fprintf(stdout, " %s", argv[b]);
+					fprintf(stdout, "\n");
+					}
+			}
 			break;
 			
 		default:
