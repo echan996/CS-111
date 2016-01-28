@@ -51,6 +51,7 @@ static struct option long_options[] = {
     { "default", required_argument, 0, 'u' },
 	{ "pause", no_argument, 0, 'v' },
 	{ "wait", no_argument, 0, 'w' },
+    { "pipe", no_argument, 0, 'x' },
     { 0, 0, 0, 0 }
 };
 
@@ -312,7 +313,6 @@ int main(int argc, char **argv){
 		}
 		case 'd':
 			verbose = 1;
-            verbosePrint(option, optind, argv, i, argc);
 			break;
 
 		//dealing with file opening options.
@@ -394,7 +394,41 @@ int main(int argc, char **argv){
 					}
 			}
 			break;
-			
+        case 'x': //pipe
+            verbosePrint(option, optind, argv, i, argc);
+            if (argv[optind][0] != '-' && argv[optind][1] != '-')
+            {
+                fprintf(stderr, "Error: Pipe should not have operands\n");
+                errors++;
+                break;
+            }
+                
+            int fd[2];
+            pipe(fd);
+            int i;
+            for (i = 0; i < 2; i++){ // add two file descriptors to the open_files array
+                if (curfiles >= maxfiles){
+                    open_files = (struct file_info*)realloc(open_files, (maxfiles *= 2)*sizeof(struct file_info));
+                    if (open_files == NULL){
+                        fprintf(stderr, "Error: Unable to reallocate memory; file was not opened.\n");
+                        errors++;
+                        break;
+                    }
+                }
+                open_files[curfiles].descriptor = fd[i];
+                if (i){ // when i is 0 and the read end of the pipe
+                    open_files[curfiles].readable = 1;
+                    open_files[curfiles].writable = 0;
+                }
+                else {// when i is 1 and the write end of the pipe
+                    open_files[curfiles].readable = 0;
+                    open_files[curfiles].writable = 1;
+                }
+                open_files[curfiles].open = 1;
+                curfiles++;
+            }
+            
+            break;
 		default:
 			break;
 		}
