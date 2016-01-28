@@ -394,7 +394,7 @@ int main(int argc, char **argv){
                 
             int fd[2];
             int p = pipe(fd);
-            if (!p){
+            if (p){
                 fprintf(stderr, "Error: Unable to create file descriptors.\n");
                 errors++;
                 break;
