@@ -271,42 +271,22 @@ int main(int argc, char **argv){
 						break;
 					}
 				}
-				running_threads[curfiles].start_ind = oldoptind + 2;
-				running_threads[curfiles].end_ind = optind;
-				running_threads[curfiles].threadnum = childPID;
+			
+				
 				execvp(argv[oldoptind+2], &argv[oldoptind+2]);
 
 			}
 			else{
-				int status;
+				/*int status;
 				int returnedPid=waitpid(childPID, &status, 0);
                 if (status > maxExit)
-                    maxExit = status;
-
+                    maxExit = status;*/ //removed exit status because they get reaped which makes it so i can't access them in wait
+				running_threads[curthreads].start_ind = oldoptind + 2;
+				running_threads[curthreads].end_ind = optind;
+				running_threads[curthreads].threadnum = childPID;
+				curthreads++;
 				break;
-				/*int parentPID = fork();
-				if (parentPID == 0){
-					close(fd[0]);
-					dup2(open_files[stdinFilePos].descriptor, STDIN_FILENO);
-					dup2(fd[1], STDOUT_FILENO);
-					dup2(open_files[stderrFilePos].descriptor, STDERR_FILENO);
-					execvp(a[0], a);
-				}
-				else{
-					close(fd[0]);
-					close(fd[1]);
-					int status;
-					int returnedPid = waitpid(-1, &status, 0);
-					if (returnedPid == parentPID)
-					{
-						waitpid(childPID, &status, 0);
-					}
-					if (returnedPid == childPID)
-					{
-						waitpid(parentPID, &status, 0);
-						free(a);
-					}
-				}*/
+			
 			}
 		
 
@@ -378,6 +358,7 @@ int main(int argc, char **argv){
 			pause();
 			break;
 		case 'w':
+
 			for (int i = 0; i < curfiles; i++){
 				if (open_files[i].open)
 					close(open_files[i].descriptor);
@@ -388,7 +369,7 @@ int main(int argc, char **argv){
 				for (int i = 0; i < curthreads;i++)
 					if (thrd == running_threads[i].threadnum){
 					fprintf(stdout, "%d", status);
-					for (int b = running_threads[i].start_ind; b < running_threads[i].end_ind; i++)
+					for (int b = running_threads[i].start_ind; b < running_threads[i].end_ind; b++)
 						fprintf(stdout, " %s", argv[b]);
 					fprintf(stdout, "\n");
 					}
