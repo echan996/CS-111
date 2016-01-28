@@ -330,6 +330,7 @@ int main(int argc, char **argv){
 			trun = -1;
 			break;
 		case 'q':
+			verbosePrint(option, optind, argv, i, argc);
 			if (atoi(optarg) >= curfiles || open_files[atoi(optarg)].open==0){
 				fprintf(stderr, "Error: File not opened\n");
 				break;
@@ -358,7 +359,7 @@ int main(int argc, char **argv){
 			pause();
 			break;
 		case 'w':
-
+			verbosePrint(option, optind, argv, i, argc);
 			for (int i = 0; i < curfiles; i++){
 				if (open_files[i].open)
 					close(open_files[i].descriptor);
