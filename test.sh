@@ -106,4 +106,35 @@ should_succeed "the temporary file 2 should have 'bar'"
 cat "$tmp_file2" | grep "foo" > /dev/null && cat "$tmp_file2" | wc -l | grep 1 > /dev/null
 should_succeed "should be able to cat from one file to the other (replace bar with foo)"
 
+# testing pipe
+./simpsh \
+--rdonly a \
+--pipe \
+--pipe \
+--creat --trunc --wronly c \
+--creat --append --wronly d \
+--command 3 5 6 tr A-Z a-z \
+--command 0 2 6 sort \
+--command 1 4 6 cat b - \
+should_succeed "able to function with two pipes and use file flags"
+
+# testing wait
+./simpsh \
+--rdonly a \
+--pipe \
+--pipe \
+--creat --trunc --wronly c \
+--creat --append --wronly d \
+--command 3 5 6 tr A-Z a-z \
+--command 0 2 6 sort \
+--command 1 4 6 cat b - \
+--wait
+should_succeed "able to function with two pipes, use file flags and wait"
+
+# testing abort
+./simpsh \
+--catch 11 \
+--abort
+should_fail "catches abort"
+
 echo "Success"
