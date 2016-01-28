@@ -256,6 +256,11 @@ int main(int argc, char **argv){
 			else if (childPID == 0){
 				//close(fd[1]);
 				int b=dup2(open_files[stdinFilePos].descriptor, STDIN_FILENO), c=dup2(open_files[stdoutFilePos].descriptor, STDOUT_FILENO), d=dup2(open_files[stderrFilePos].descriptor, STDERR_FILENO);
+                int j;
+                for (j = 0; j < curfiles; j++){
+                    open_files[j].open = 0;
+                    close(open_files[j].descriptor);
+                }
                 if (d == -1 || b == -1 || c == -1){
 					fprintf(stderr, "Error: unable to open file");
                     errors++;
