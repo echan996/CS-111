@@ -391,7 +391,12 @@ int main(int argc, char **argv){
             }
                 
             int fd[2];
-            pipe(fd);
+            int p = pipe(fd);
+            if (!p){
+                fprintf(stderr, "Error: Unable to create file descriptors.\n");
+                errors++;
+                break;
+            }
             int i;
             for (i = 0; i < 2; i++){ // add two file descriptors to the open_files array
                 if (curfiles >= maxfiles){
