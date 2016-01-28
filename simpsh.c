@@ -87,6 +87,7 @@ void verbosePrint(char option, int optind, char **argv, int longOptInd, int argc
 }
 
 int main(int argc, char **argv){
+    int optwait = 0;
 	int numArgs = 0, start;
 	open_files = (struct file_info*)malloc(maxfiles*sizeof(struct file_info));
 	running_threads = (struct thread_info*)malloc(maxthreads*sizeof(struct thread_info));
@@ -365,6 +366,7 @@ int main(int argc, char **argv){
 			break;
 		case 'w':
 			verbosePrint(option, optind, argv, i, argc);
+            optwait = 1;
 			for (int i = 0; i < curfiles; i++){
 				if (open_files[i].open)
 					close(open_files[i].descriptor);
@@ -430,11 +432,18 @@ int main(int argc, char **argv){
 
 		
 	}
-    for (int i = 0; i < curthreads; i++){
-        int status;
-        pid_t thrd = waitpid(-1, &status, 0);
-        if (status > maxExit)
-            maxExit = status;
+    if (!optwait){
+        for (int i = 0; i < curfiles; i++){
+            if (open_files[i].open)
+                close(open_files[i].descriptor);
+        }
+
+        for (int i = 0; i < curthreads; i++){
+            int status;
+            pid_t thrd = waitpid(-1, &status, 0);
+            if (status > maxExit)
+                maxExit = status;
+        }
     }
 	free(open_files);
     if (errors > 0 && maxExit == 0)
