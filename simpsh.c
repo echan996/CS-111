@@ -372,6 +372,8 @@ int main(int argc, char **argv){
 			for (int i = 0; i < curthreads; i++){
 				int status;
 				pid_t thrd = waitpid(-1, &status, 0);
+                if (status > maxExit)
+                    maxExit = status;
 				for (int i = 0; i < curthreads;i++)
 					if (thrd == running_threads[i].threadnum){
 					fprintf(stdout, "%d", status);
@@ -428,8 +430,16 @@ int main(int argc, char **argv){
 
 		
 	}
+    for (int i = 0; i < curthreads; i++){
+        int status;
+        pid_t thrd = waitpid(-1, &status, 0);
+        if (status > maxExit)
+            maxExit = status;
+    }
 	free(open_files);
-    exit(maxExit);
+    if (errors > 0 && maxExit == 0)
+        maxExit = 1;
+     exit(maxExit);
  }
 
 
