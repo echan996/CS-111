@@ -15,8 +15,8 @@ struct file_info{
     int descriptor, readable, writable, open;
 };
 struct thread_info{
-	int start_ind, end_ind;
-	pid_t threadnum;
+    int start_ind, end_ind;
+    pid_t threadnum;
 };
 struct file_info* open_files;
 struct thread_info* running_threads;
@@ -26,8 +26,8 @@ int errors = 0; //deal with after
 int maxExit = 0;
 int append=0, cloexec=0, create=0, directory=0, dsyc=0, excl=0, nofollow=0, nonblock=0, rsync=0, syc=0,trun=0;
 void sig_handler(int signum){
-	fprintf(stderr, "%d caught\n", signum);
-	_exit(signum);
+    fprintf(stderr, "%d caught\n", signum);
+    _exit(signum);
 };
 struct rusage thread_timer;
 
@@ -53,10 +53,10 @@ static struct option long_options[] = {
     { "catch", required_argument, 0, 's' },
     { "ignore", required_argument, 0, 't' },
     { "default", required_argument, 0, 'u' },
-	{ "pause", no_argument, 0, 'v' },
-	{ "wait", no_argument, 0, 'w' },
+    { "pause", no_argument, 0, 'v' },
+    { "wait", no_argument, 0, 'w' },
     { "pipe", no_argument, 0, 'x' },
-	{ "profile",no_argument,0,'y' },
+    { "profile",no_argument,0,'y' },
     { 0, 0, 0, 0 }
 };
 
@@ -93,348 +93,33 @@ void verbosePrint(char option, int optind, char **argv, int longOptInd, int argc
 
 int main(int argc, char **argv){
     int optwait = 0;
-	int numArgs = 0, start;
-	open_files = (struct file_info*)malloc(maxfiles*sizeof(struct file_info));
-	running_threads = (struct thread_info*)malloc(maxthreads*sizeof(struct thread_info));
-	char option = 0;
-	int i = 0, a;
-	while ((option = (char)getopt_long(argc, argv, "", long_options, &i)) != -1)
-	{
-		switch (option){
-        case 'a':{
-			int b = getrusage(RUSAGE_SELF, &thread_timer);
-            if (b == -1){
-                errors++;
-                fprintf(stderr, "Error: Could not get resource usage data\n");
-                errors++;
-                break;
-            }
-			double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
-			double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
-
-			verbosePrint(option, optind, argv, i, argc);
-			if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
-			{
-				optind--;
-				fprintf(stderr, "Error: Wrong number of operands\n");
-                errors++;
-				break;
-			}
-			if (curfiles >= maxfiles){
-				open_files = (struct file_info*)realloc(open_files, (maxfiles *= 2)*sizeof(struct file_info));
-				if (open_files == NULL){
-					fprintf(stderr, "Error: Unable to reallocate memory; file was not opened.\n");
-                    errors++;
-					break;
-				}
-			}
-
-			a = open(optarg, O_RDONLY | (O_APPEND & append) | (O_CLOEXEC & cloexec) | (O_CREAT & create) | (O_DIRECTORY & directory) | (O_DSYNC & dsyc) | (O_EXCL & excl) | (O_NOFOLLOW & nofollow)
-			| (O_NONBLOCK & nonblock) | (O_RSYNC & rsync) | (O_SYNC & syc) | (O_TRUNC & trun));
-
-			if (a == -1){
-				errors++;
-				fprintf(stderr, "Error: Unable to open file\n");
-                errors++;
-				break;
-			}
-
-			open_files[curfiles].descriptor = a;
-			open_files[curfiles].readable = 1;
-			open_files[curfiles].writable = 0;
-			open_files[curfiles].open = 1;
-			curfiles++;
-			append = cloexec = create = directory = dsyc = excl = nofollow = nonblock = rsync = syc = trun = 0;
-			//some storage of the open value into some global int array.
-
-			if (profile){
-				b = getrusage(RUSAGE_SELF, &thread_timer);
+    int numArgs = 0, start;
+    open_files = (struct file_info*)malloc(maxfiles*sizeof(struct file_info));
+    running_threads = (struct thread_info*)malloc(maxthreads*sizeof(struct thread_info));
+    char option = 0;
+    int i = 0, a;
+    while ((option = (char)getopt_long(argc, argv, "", long_options, &i)) != -1)
+    {
+        switch (option){
+            case 'a':{
+                int b = getrusage(RUSAGE_SELF, &thread_timer);
                 if (b == -1){
                     errors++;
                     fprintf(stderr, "Error: Could not get resource usage data\n");
                     errors++;
                     break;
                 }
-				usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
-				kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
-                fprintf(stdout, "user time: %f  ", usrtime);
-                fprintf(stdout, "kernel time: %f\n", kertime);
-			}
-            break;
-            }
-		case 'b':
-            verbosePrint(option, optind, argv, i, argc);
-			if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
-			{
-				optind--;
-				fprintf(stderr, "Error: Wrong number of operands\n");
-                errors++;
-				break;
-			}
-			if (curfiles >= maxfiles){
-				open_files = (struct file_info*)realloc(open_files, (maxfiles *= 2)*sizeof(struct file_info));
-				if (open_files == NULL){
-					fprintf(stderr, "Error: Unable to reallocate memory; file was not opened.\n");
-                    errors++;
-					break;
-				}
-			}
-
-
-			a = open(optarg, O_WRONLY | (O_APPEND & append) | (O_CLOEXEC & cloexec) | (O_CREAT & create) | (O_DIRECTORY & directory) | (O_DSYNC & dsyc) | (O_EXCL & excl) | (O_NOFOLLOW & nofollow)
-				| (O_NONBLOCK & nonblock) | (O_RSYNC & rsync) | (O_SYNC & syc) | (O_TRUNC & trun));
-
-			if (a == -1){
-				errors++;
-				fprintf(stderr, "Error: Unable to create file\n");
-                errors++;
-				break;
-			}
-
-			open_files[curfiles].descriptor = a;
-			open_files[curfiles].readable = 0;
-			open_files[curfiles].writable = 1;
-			open_files[curfiles].open = 1;
-			curfiles++;
-			append = cloexec = create = directory = dsyc = excl = nofollow = nonblock = rsync = syc = trun = 0;
-			break;
-		case 'p':
-            verbosePrint(option, optind, argv, i, argc);
-			if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
-			{
-				optind--;
-				fprintf(stderr, "Error: Wrong number of operands\n");
-				errors++;
-				break;
-			}
-			if (curfiles >= maxfiles){
-				open_files = (struct file_info*)realloc(open_files, (maxfiles *= 2)*sizeof(struct file_info));
-				if (open_files == NULL){
-					fprintf(stderr, "Error: Unable to reallocate memory; file was not opened.\n");
-					errors++;
-					break;
-				}
-			}
-
-
-			a = open(optarg, O_RDWR | (O_APPEND & append) | (O_CLOEXEC & cloexec) | (O_CREAT & create) | (O_DIRECTORY & directory) | (O_DSYNC & dsyc) | (O_EXCL & excl) | (O_NOFOLLOW & nofollow)
-				| (O_NONBLOCK & nonblock) | (O_RSYNC & rsync) | (O_SYNC & syc) | (O_TRUNC & trun));
-
-			if (a == -1){
-				errors++;
-				fprintf(stderr, "Error: Unable to create file\n");
-				errors++;
-				break;
-			}
-
-			open_files[curfiles].descriptor = a;
-			open_files[curfiles].readable = 1;
-			open_files[curfiles].writable = 1;
-			open_files[curfiles].open = 1;
-			curfiles++;
-			append = cloexec = create = directory = dsyc = excl = nofollow = nonblock = rsync = syc = trun = 0;
-			break;
-
-			//COMMAND
-		case 'c':{
-            verbosePrint(option, optind, argv, i, argc);
-			int index, count=0;
-            int oldoptind = optind;
-			for (index = optind - 1; index < argc; index++, count++){
-				if (argv[index][0] == '-' && argv[index][1] == '-')
-					break;
-			}
-            optind = index;
-			if (count < 4){
-				fprintf(stderr, "Error: --command requires at least 4 options.\n");
-                errors++;
-				break;
-			}
-			
-            
-            int openCheck = 0, i;
-            for (i = oldoptind - 1; i < (oldoptind + 2) && i < argc; i++){
-                if (atoi(argv[i]) >= curfiles || open_files[atoi(argv[i])].open==0){
-                    openCheck = 1;
-                    break;
-                }
-            }
-            if (openCheck){
-                fprintf(stderr, "Error: File not open\n");
-                errors++;
-                break;
-            }
-			
-			int stdinFilePos = atoi(argv[oldoptind - 1]), stdoutFilePos = atoi(argv[oldoptind]), stderrFilePos = atoi(argv[oldoptind + 1]);
-			/*if (!open_files[stdinFilePos].readable || !open_files[stdoutFilePos].writable || !open_files[stderrFilePos].writable){
-				fprintf(stderr, "Error: File permission denied\n");
-				break;
-			}
-			*/
-			
-			////////////////////////////////////////////////////////////////////////Executable Processing////////////////////////////////////////////////////////////////////
-
-			int childPID = fork();
-			//int fd[2];
-			//pipe(fd);
-
-			if (childPID < 0){
-				fprintf(stderr, "Error: Unable to fork child process\n");
-                errors++;
-                break;
-			}
-
-			else if (childPID == 0){
-				//close(fd[1]);
-				int b=dup2(open_files[stdinFilePos].descriptor, STDIN_FILENO), c=dup2(open_files[stdoutFilePos].descriptor, STDOUT_FILENO), d=dup2(open_files[stderrFilePos].descriptor, STDERR_FILENO);
-                int j;
-                for (j = 0; j < curfiles; j++){
-                    open_files[j].open = 0;
-                    close(open_files[j].descriptor);
-                }
-                if (d == -1 || b == -1 || c == -1){
-					fprintf(stderr, "Error: unable to open file");
-                    errors++;
-                    break;
-                }
-				argv[optind] = '\0';
-
-				if (curfiles >= maxfiles){
-					open_files = (struct file_info*)realloc(open_files, (maxfiles *= 2)*sizeof(struct file_info));
-					if (open_files == NULL){
-						fprintf(stderr, "Error: Unable to reallocate memory; file was not opened.\n");
-						errors++;
-						break;
-					}
-				}
-			
-				
-				execvp(argv[oldoptind+2], &argv[oldoptind+2]);
-
-			}
-			else{
-				/*int status;
-				int returnedPid=waitpid(childPID, &status, 0);
-                if (status > maxExit)
-                    maxExit = status;*/ //removed exit status because they get reaped which makes it so i can't access them in wait
-				running_threads[curthreads].start_ind = oldoptind + 2;
-				running_threads[curthreads].end_ind = optind;
-				running_threads[curthreads].threadnum = childPID;
-				curthreads++;
-				break;
-			
-			}
-		
-
-		}
-		case 'd':
-			verbose = 1;
-			break;
-
-		//dealing with file opening options.
-		case 'e':
-			append = -1;
-			break;
-		case 'f':
-			cloexec = -1;
-			break;
-		case 'g':
-			create = -1;
-			break;
-		case 'h':
-			directory = -1;
-			break;
-		case 'i':
-			dsyc = -1;
-			break;
-		case 'j':
-			excl = -1;
-			break;
-		case 'k':
-			nofollow = -1;
-			break;
-		case 'l':
-			nonblock = -1;
-			break;
-		case 'm':
-			rsync = -1;
-			break;
-		case 'n':
-			syc = -1;
-			break;
-		case 'o':
-			trun = -1;
-			break;
-		case 'q':
-			verbosePrint(option, optind, argv, i, argc);
-			if (atoi(optarg) >= curfiles || open_files[atoi(optarg)].open==0){
-				fprintf(stderr, "Error: File not opened\n");
-				break;
-			}
-			open_files[atoi(optarg)].open = 0;
-			close(open_files[atoi(optarg)].descriptor);
-			break;
-		case 'r':
-            verbosePrint(option, optind, argv, i, argc);
-            raise(SIGSEGV);
-			break;
-		case 's'://catch
-            verbosePrint(option, optind, argv, i, argc);
-			signal(atoi(optarg), sig_handler);
-			break;
-		case 't'://ignore
-            verbosePrint(option, optind, argv, i, argc);
-			signal(atoi(optarg), SIG_IGN);
-			break;
-		case 'u'://default
-            verbosePrint(option, optind, argv, i, argc);
-			signal(atoi(optarg), SIG_DFL);
-			break;
-		case 'v':
-			verbosePrint(option, optind, argv, i, argc);
-			pause();
-			break;
-		case 'w':
-			verbosePrint(option, optind, argv, i, argc);
-            optwait = 1;
-			for (int i = 0; i < curfiles; i++){
-				if (open_files[i].open)
-					close(open_files[i].descriptor);
-			}
-			for (int i = 0; i < curthreads; i++){
-				int status;
-				pid_t thrd = waitpid(-1, &status, 0);
-
-                if (status > maxExit)
-                    maxExit = status;
-
-				for (int i = 0; i < curthreads;i++)
-					if (thrd == running_threads[i].threadnum){
-					fprintf(stdout, "%d", status);
-					for (int b = running_threads[i].start_ind; b < running_threads[i].end_ind; b++)
-						fprintf(stdout, " %s", argv[b]);
-					fprintf(stdout, "\n");
-					}
-			}
-			break;
-        case 'x': //pipe
-            verbosePrint(option, optind, argv, i, argc);
-            if (argv[optind][0] != '-' && argv[optind][1] != '-')
-            {
-                fprintf(stderr, "Error: Pipe should not have operands\n");
-                errors++;
-                break;
-            }
+                double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
+                double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
                 
-            int fd[2];
-            int p = pipe(fd);
-            if (p){
-                fprintf(stderr, "Error: Unable to create file descriptors.\n");
-                errors++;
-                break;
-            }
-            int i;
-            for (i = 0; i < 2; i++){ // add two file descriptors to the open_files array
+                verbosePrint(option, optind, argv, i, argc);
+                if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
+                {
+                    optind--;
+                    fprintf(stderr, "Error: Wrong number of operands\n");
+                    errors++;
+                    break;
+                }
                 if (curfiles >= maxfiles){
                     open_files = (struct file_info*)realloc(open_files, (maxfiles *= 2)*sizeof(struct file_info));
                     if (open_files == NULL){
@@ -443,36 +128,589 @@ int main(int argc, char **argv){
                         break;
                     }
                 }
-                open_files[curfiles].descriptor = fd[i];
-                if (i){ // when i is 0 and the read end of the pipe
-                    open_files[curfiles].readable = 1;
-                    open_files[curfiles].writable = 0;
+                
+                a = open(optarg, O_RDONLY | (O_APPEND & append) | (O_CLOEXEC & cloexec) | (O_CREAT & create) | (O_DIRECTORY & directory) | (O_DSYNC & dsyc) | (O_EXCL & excl) | (O_NOFOLLOW & nofollow)
+                         | (O_NONBLOCK & nonblock) | (O_RSYNC & rsync) | (O_SYNC & syc) | (O_TRUNC & trun));
+                
+                if (a == -1){
+                    errors++;
+                    fprintf(stderr, "Error: Unable to open file\n");
+                    errors++;
+                    break;
                 }
-                else {// when i is 1 and the write end of the pipe
-                    open_files[curfiles].readable = 0;
-                    open_files[curfiles].writable = 1;
-                }
+                
+                open_files[curfiles].descriptor = a;
+                open_files[curfiles].readable = 1;
+                open_files[curfiles].writable = 0;
                 open_files[curfiles].open = 1;
                 curfiles++;
+                append = cloexec = create = directory = dsyc = excl = nofollow = nonblock = rsync = syc = trun = 0;
+                //some storage of the open value into some global int array.
+                
+                if (profile){
+                    b = getrusage(RUSAGE_SELF, &thread_timer);
+                    if (b == -1){
+                        errors++;
+                        fprintf(stderr, "Error: Could not get resource usage data\n");
+                        errors++;
+                        break;
+                    }
+                    usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
+                    kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
+                    fprintf(stdout, "user time: %f  ", usrtime);
+                    fprintf(stdout, "kernel time: %f\n", kertime);
+                }
+                break;
             }
-            
-            break;
-		case 'y':
-			profile = 1;
-			break;
-		default:
-			break;
-		}
-
-
-		
-	}
+            case 'b':
+                int b = getrusage(RUSAGE_SELF, &thread_timer);
+                if (b == -1){
+                    errors++;
+                    fprintf(stderr, "Error: Could not get resource usage data\n");
+                    errors++;
+                    break;
+                }
+                double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
+                double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
+                
+                verbosePrint(option, optind, argv, i, argc);
+                if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
+                {
+                    optind--;
+                    fprintf(stderr, "Error: Wrong number of operands\n");
+                    errors++;
+                    break;
+                }
+                if (curfiles >= maxfiles){
+                    open_files = (struct file_info*)realloc(open_files, (maxfiles *= 2)*sizeof(struct file_info));
+                    if (open_files == NULL){
+                        fprintf(stderr, "Error: Unable to reallocate memory; file was not opened.\n");
+                        errors++;
+                        break;
+                    }
+                }
+                
+                
+                a = open(optarg, O_WRONLY | (O_APPEND & append) | (O_CLOEXEC & cloexec) | (O_CREAT & create) | (O_DIRECTORY & directory) | (O_DSYNC & dsyc) | (O_EXCL & excl) | (O_NOFOLLOW & nofollow)
+                         | (O_NONBLOCK & nonblock) | (O_RSYNC & rsync) | (O_SYNC & syc) | (O_TRUNC & trun));
+                
+                if (a == -1){
+                    errors++;
+                    fprintf(stderr, "Error: Unable to create file\n");
+                    errors++;
+                    break;
+                }
+                
+                open_files[curfiles].descriptor = a;
+                open_files[curfiles].readable = 0;
+                open_files[curfiles].writable = 1;
+                open_files[curfiles].open = 1;
+                curfiles++;
+                append = cloexec = create = directory = dsyc = excl = nofollow = nonblock = rsync = syc = trun = 0;
+                
+                if (profile){
+                    b = getrusage(RUSAGE_SELF, &thread_timer);
+                    if (b == -1){
+                        errors++;
+                        fprintf(stderr, "Error: Could not get resource usage data\n");
+                        errors++;
+                        break;
+                    }
+                    usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
+                    kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
+                    fprintf(stdout, "user time: %f  ", usrtime);
+                    fprintf(stdout, "kernel time: %f\n", kertime);
+                }
+                break;
+            case 'p':
+                int b = getrusage(RUSAGE_SELF, &thread_timer);
+                if (b == -1){
+                    errors++;
+                    fprintf(stderr, "Error: Could not get resource usage data\n");
+                    errors++;
+                    break;
+                }
+                double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
+                double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
+                
+                verbosePrint(option, optind, argv, i, argc);
+                if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
+                {
+                    optind--;
+                    fprintf(stderr, "Error: Wrong number of operands\n");
+                    errors++;
+                    break;
+                }
+                if (curfiles >= maxfiles){
+                    open_files = (struct file_info*)realloc(open_files, (maxfiles *= 2)*sizeof(struct file_info));
+                    if (open_files == NULL){
+                        fprintf(stderr, "Error: Unable to reallocate memory; file was not opened.\n");
+                        errors++;
+                        break;
+                    }
+                }
+                
+                
+                a = open(optarg, O_RDWR | (O_APPEND & append) | (O_CLOEXEC & cloexec) | (O_CREAT & create) | (O_DIRECTORY & directory) | (O_DSYNC & dsyc) | (O_EXCL & excl) | (O_NOFOLLOW & nofollow)
+                         | (O_NONBLOCK & nonblock) | (O_RSYNC & rsync) | (O_SYNC & syc) | (O_TRUNC & trun));
+                
+                if (a == -1){
+                    errors++;
+                    fprintf(stderr, "Error: Unable to create file\n");
+                    errors++;
+                    break;
+                }
+                
+                open_files[curfiles].descriptor = a;
+                open_files[curfiles].readable = 1;
+                open_files[curfiles].writable = 1;
+                open_files[curfiles].open = 1;
+                curfiles++;
+                append = cloexec = create = directory = dsyc = excl = nofollow = nonblock = rsync = syc = trun = 0;
+                
+                if (profile){
+                    b = getrusage(RUSAGE_SELF, &thread_timer);
+                    if (b == -1){
+                        errors++;
+                        fprintf(stderr, "Error: Could not get resource usage data\n");
+                        errors++;
+                        break;
+                    }
+                    usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
+                    kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
+                    fprintf(stdout, "user time: %f  ", usrtime);
+                    fprintf(stdout, "kernel time: %f\n", kertime);
+                }
+                break;
+                //COMMAND
+            case 'c':{
+                verbosePrint(option, optind, argv, i, argc);
+                int index, count=0;
+                int oldoptind = optind;
+                for (index = optind - 1; index < argc; index++, count++){
+                    if (argv[index][0] == '-' && argv[index][1] == '-')
+                        break;
+                }
+                optind = index;
+                if (count < 4){
+                    fprintf(stderr, "Error: --command requires at least 4 options.\n");
+                    errors++;
+                    break;
+                }
+                
+                
+                int openCheck = 0, i;
+                for (i = oldoptind - 1; i < (oldoptind + 2) && i < argc; i++){
+                    if (atoi(argv[i]) >= curfiles || open_files[atoi(argv[i])].open==0){
+                        openCheck = 1;
+                        break;
+                    }
+                }
+                if (openCheck){
+                    fprintf(stderr, "Error: File not open\n");
+                    errors++;
+                    break;
+                }
+                
+                int stdinFilePos = atoi(argv[oldoptind - 1]), stdoutFilePos = atoi(argv[oldoptind]), stderrFilePos = atoi(argv[oldoptind + 1]);
+                /*if (!open_files[stdinFilePos].readable || !open_files[stdoutFilePos].writable || !open_files[stderrFilePos].writable){
+                 fprintf(stderr, "Error: File permission denied\n");
+                 break;
+                 }
+                 */
+                
+                ////////////////////////////////////////////////////////////////////////Executable Processing////////////////////////////////////////////////////////////////////
+                
+                int childPID = fork();
+                //int fd[2];
+                //pipe(fd);
+                
+                if (childPID < 0){
+                    fprintf(stderr, "Error: Unable to fork child process\n");
+                    errors++;
+                    break;
+                }
+                
+                else if (childPID == 0){
+                    //close(fd[1]);
+                    int b=dup2(open_files[stdinFilePos].descriptor, STDIN_FILENO), c=dup2(open_files[stdoutFilePos].descriptor, STDOUT_FILENO), d=dup2(open_files[stderrFilePos].descriptor, STDERR_FILENO);
+                    int j;
+                    for (j = 0; j < curfiles; j++){
+                        open_files[j].open = 0;
+                        close(open_files[j].descriptor);
+                    }
+                    if (d == -1 || b == -1 || c == -1){
+                        fprintf(stderr, "Error: unable to open file");
+                        errors++;
+                        break;
+                    }
+                    argv[optind] = '\0';
+                    
+                    if (curfiles >= maxfiles){
+                        open_files = (struct file_info*)realloc(open_files, (maxfiles *= 2)*sizeof(struct file_info));
+                        if (open_files == NULL){
+                            fprintf(stderr, "Error: Unable to reallocate memory; file was not opened.\n");
+                            errors++;
+                            break;
+                        }
+                    }
+                    
+                    
+                    execvp(argv[oldoptind+2], &argv[oldoptind+2]);
+                    
+                }
+                else{
+                    /*int status;
+                     int returnedPid=waitpid(childPID, &status, 0);
+                     if (status > maxExit)
+                     maxExit = status;*/ //removed exit status because they get reaped which makes it so i can't access them in wait
+                    running_threads[curthreads].start_ind = oldoptind + 2;
+                    running_threads[curthreads].end_ind = optind;
+                    running_threads[curthreads].threadnum = childPID;
+                    curthreads++;
+                    break;
+                    
+                }
+                
+                
+            }
+            case 'd':
+                verbose = 1;
+                break;
+                
+                //dealing with file opening options.
+            case 'e':
+                append = -1;
+                break;
+            case 'f':
+                cloexec = -1;
+                break;
+            case 'g':
+                create = -1;
+                break;
+            case 'h':
+                directory = -1;
+                break;
+            case 'i':
+                dsyc = -1;
+                break;
+            case 'j':
+                excl = -1;
+                break;
+            case 'k':
+                nofollow = -1;
+                break;
+            case 'l':
+                nonblock = -1;
+                break;
+            case 'm':
+                rsync = -1;
+                break;
+            case 'n':
+                syc = -1;
+                break;
+            case 'o':
+                trun = -1;
+                break;
+            case 'q':
+                int b = getrusage(RUSAGE_SELF, &thread_timer);
+                if (b == -1){
+                    errors++;
+                    fprintf(stderr, "Error: Could not get resource usage data\n");
+                    errors++;
+                    break;
+                }
+                double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
+                double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
+                
+                verbosePrint(option, optind, argv, i, argc);
+                if (atoi(optarg) >= curfiles || open_files[atoi(optarg)].open==0){
+                    fprintf(stderr, "Error: File not opened\n");
+                    break;
+                }
+                open_files[atoi(optarg)].open = 0;
+                close(open_files[atoi(optarg)].descriptor);
+                
+                if (profile){
+                    b = getrusage(RUSAGE_SELF, &thread_timer);
+                    if (b == -1){
+                        errors++;
+                        fprintf(stderr, "Error: Could not get resource usage data\n");
+                        errors++;
+                        break;
+                    }
+                    usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
+                    kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
+                    fprintf(stdout, "user time: %f  ", usrtime);
+                    fprintf(stdout, "kernel time: %f\n", kertime);
+                }
+                break;
+            case 'r':
+                int b = getrusage(RUSAGE_SELF, &thread_timer);
+                if (b == -1){
+                    errors++;
+                    fprintf(stderr, "Error: Could not get resource usage data\n");
+                    errors++;
+                    break;
+                }
+                double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
+                double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
+                
+                verbosePrint(option, optind, argv, i, argc);
+                raise(SIGSEGV);
+                
+                if (profile){
+                    b = getrusage(RUSAGE_SELF, &thread_timer);
+                    if (b == -1){
+                        errors++;
+                        fprintf(stderr, "Error: Could not get resource usage data\n");
+                        errors++;
+                        break;
+                    }
+                    usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
+                    kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
+                    fprintf(stdout, "user time: %f  ", usrtime);
+                    fprintf(stdout, "kernel time: %f\n", kertime);
+                }
+                break;
+            case 's'://catch
+                int b = getrusage(RUSAGE_SELF, &thread_timer);
+                if (b == -1){
+                    errors++;
+                    fprintf(stderr, "Error: Could not get resource usage data\n");
+                    errors++;
+                    break;
+                }
+                double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
+                double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
+                
+                verbosePrint(option, optind, argv, i, argc);
+                signal(atoi(optarg), sig_handler);
+                
+                if (profile){
+                    b = getrusage(RUSAGE_SELF, &thread_timer);
+                    if (b == -1){
+                        errors++;
+                        fprintf(stderr, "Error: Could not get resource usage data\n");
+                        errors++;
+                        break;
+                    }
+                    usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
+                    kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
+                    fprintf(stdout, "user time: %f  ", usrtime);
+                    fprintf(stdout, "kernel time: %f\n", kertime);
+                }
+                break;
+            case 't'://ignore
+                int b = getrusage(RUSAGE_SELF, &thread_timer);
+                if (b == -1){
+                    errors++;
+                    fprintf(stderr, "Error: Could not get resource usage data\n");
+                    errors++;
+                    break;
+                }
+                double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
+                double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
+                
+                verbosePrint(option, optind, argv, i, argc);
+                signal(atoi(optarg), SIG_IGN);
+                
+                if (profile){
+                    b = getrusage(RUSAGE_SELF, &thread_timer);
+                    if (b == -1){
+                        errors++;
+                        fprintf(stderr, "Error: Could not get resource usage data\n");
+                        errors++;
+                        break;
+                    }
+                    usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
+                    kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
+                    fprintf(stdout, "user time: %f  ", usrtime);
+                    fprintf(stdout, "kernel time: %f\n", kertime);
+                }
+                break;
+            case 'u'://default
+                int b = getrusage(RUSAGE_SELF, &thread_timer);
+                if (b == -1){
+                    errors++;
+                    fprintf(stderr, "Error: Could not get resource usage data\n");
+                    errors++;
+                    break;
+                }
+                double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
+                double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
+                
+                verbosePrint(option, optind, argv, i, argc);
+                signal(atoi(optarg), SIG_DFL);
+                
+                if (profile){
+                    b = getrusage(RUSAGE_SELF, &thread_timer);
+                    if (b == -1){
+                        errors++;
+                        fprintf(stderr, "Error: Could not get resource usage data\n");
+                        errors++;
+                        break;
+                    }
+                    usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
+                    kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
+                    fprintf(stdout, "user time: %f  ", usrtime);
+                    fprintf(stdout, "kernel time: %f\n", kertime);
+                }
+                break;
+            case 'v':
+                int b = getrusage(RUSAGE_SELF, &thread_timer);
+                if (b == -1){
+                    errors++;
+                    fprintf(stderr, "Error: Could not get resource usage data\n");
+                    errors++;
+                    break;
+                }
+                double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
+                double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
+                
+                verbosePrint(option, optind, argv, i, argc);
+                pause();
+                
+                if (profile){
+                    b = getrusage(RUSAGE_SELF, &thread_timer);
+                    if (b == -1){
+                        errors++;
+                        fprintf(stderr, "Error: Could not get resource usage data\n");
+                        errors++;
+                        break;
+                    }
+                    usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
+                    kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
+                    fprintf(stdout, "user time: %f  ", usrtime);
+                    fprintf(stdout, "kernel time: %f\n", kertime);
+                }
+                break;
+            case 'w':
+                int b = getrusage(RUSAGE_SELF, &thread_timer);
+                if (b == -1){
+                    errors++;
+                    fprintf(stderr, "Error: Could not get resource usage data\n");
+                    errors++;
+                    break;
+                }
+                double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
+                double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
+                
+                verbosePrint(option, optind, argv, i, argc);
+                optwait = 1;
+                for (int i = 0; i < curfiles; i++){
+                    if (open_files[i].open)
+                        close(open_files[i].descriptor);
+                }
+                for (int i = 0; i < curthreads; i++){
+                    int status;
+                    pid_t thrd = waitpid(-1, &status, 0);
+                    
+                    if (status > maxExit)
+                        maxExit = status;
+                    
+                    for (int i = 0; i < curthreads;i++)
+                        if (thrd == running_threads[i].threadnum){
+                            fprintf(stdout, "%d", status);
+                            for (int b = running_threads[i].start_ind; b < running_threads[i].end_ind; b++)
+                                fprintf(stdout, " %s", argv[b]);
+                            fprintf(stdout, "\n");
+                        }
+                }
+                
+                if (profile){
+                    b = getrusage(RUSAGE_SELF, &thread_timer);
+                    if (b == -1){
+                        errors++;
+                        fprintf(stderr, "Error: Could not get resource usage data\n");
+                        errors++;
+                        break;
+                    }
+                    usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
+                    kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
+                    fprintf(stdout, "user time: %f  ", usrtime);
+                    fprintf(stdout, "kernel time: %f\n", kertime);
+                }
+                break;
+            case 'x': //pipe
+                int b = getrusage(RUSAGE_SELF, &thread_timer);
+                if (b == -1){
+                    errors++;
+                    fprintf(stderr, "Error: Could not get resource usage data\n");
+                    errors++;
+                    break;
+                }
+                double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
+                double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
+                
+                verbosePrint(option, optind, argv, i, argc);
+                if (argv[optind][0] != '-' && argv[optind][1] != '-')
+                {
+                    fprintf(stderr, "Error: Pipe should not have operands\n");
+                    errors++;
+                    break;
+                }
+                
+                int fd[2];
+                int p = pipe(fd);
+                if (p){
+                    fprintf(stderr, "Error: Unable to create file descriptors.\n");
+                    errors++;
+                    break;
+                }
+                int i;
+                for (i = 0; i < 2; i++){ // add two file descriptors to the open_files array
+                    if (curfiles >= maxfiles){
+                        open_files = (struct file_info*)realloc(open_files, (maxfiles *= 2)*sizeof(struct file_info));
+                        if (open_files == NULL){
+                            fprintf(stderr, "Error: Unable to reallocate memory; file was not opened.\n");
+                            errors++;
+                            break;
+                        }
+                    }
+                    open_files[curfiles].descriptor = fd[i];
+                    if (i){ // when i is 0 and the read end of the pipe
+                        open_files[curfiles].readable = 1;
+                        open_files[curfiles].writable = 0;
+                    }
+                    else {// when i is 1 and the write end of the pipe
+                        open_files[curfiles].readable = 0;
+                        open_files[curfiles].writable = 1;
+                    }
+                    open_files[curfiles].open = 1;
+                    curfiles++;
+                }
+                
+                if (profile){
+                    b = getrusage(RUSAGE_SELF, &thread_timer);
+                    if (b == -1){
+                        errors++;
+                        fprintf(stderr, "Error: Could not get resource usage data\n");
+                        errors++;
+                        break;
+                    }
+                    usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
+                    kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
+                    fprintf(stdout, "user time: %f  ", usrtime);
+                    fprintf(stdout, "kernel time: %f\n", kertime);
+                }
+                break;
+            case 'y':
+                profile = 1;
+                break;
+            default:
+                break;
+        }
+        
+        
+        
+    }
     if (!optwait){
         for (int i = 0; i < curfiles; i++){
             if (open_files[i].open)
                 close(open_files[i].descriptor);
         }
-
+        
         for (int i = 0; i < curthreads; i++){
             int status;
             pid_t thrd = waitpid(-1, &status, 0);
@@ -480,11 +718,10 @@ int main(int argc, char **argv){
                 maxExit = status;
         }
     }
-	free(open_files);
+    free(open_files);
     if (errors > 0 && maxExit == 0)
         maxExit = 1;
-     exit(maxExit);
- }
+    exit(maxExit);
+}
 
 
-		
