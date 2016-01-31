@@ -29,6 +29,7 @@ void sig_handler(int signum){
 	fprintf(stderr, "%d caught\n", signum);
 	_exit(signum);
 };
+struct rusage thread_timer;
 
 static struct option long_options[] = {
     { "rdonly", required_argument, 0, 'a' },
@@ -100,8 +101,7 @@ int main(int argc, char **argv){
 	while ((option = (char)getopt_long(argc, argv, "", long_options, &i)) != -1)
 	{
 		switch (option){
-		case 'a':
-			struct rusage thread_timer;
+        case 'a':{
 			int b = getrusage(RUSAGE_SELF, &thread_timer);
             if (b == -1){
                 errors++;
@@ -109,8 +109,8 @@ int main(int argc, char **argv){
                 errors++;
                 break;
             }
-			time_t usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
-			time_t kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
+			double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
+			double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
 
 			verbosePrint(option, optind, argv, i, argc);
 			if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
@@ -157,10 +157,11 @@ int main(int argc, char **argv){
                 }
 				usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
 				kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
-                fprintf(stdout, "user time: %d  ", usrtime);
-                fprintf(stdout, "kernel time: %d\n", kertime);
+                fprintf(stdout, "user time: %f  ", usrtime);
+                fprintf(stdout, "kernel time: %f\n", kertime);
 			}
-			break;
+            break;
+            }
 		case 'b':
             verbosePrint(option, optind, argv, i, argc);
 			if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
