@@ -102,9 +102,9 @@ int main(int argc, char **argv){
 		switch (option){
 		case 'a':
 			struct rusage thread_timer;
-			int getrusage(RUSAGE_SELF, &thread_timer);
-			int usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
-			int kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
+			getrusage(RUSAGE_SELF, &thread_timer);
+			time_t usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
+			time_t kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
 
 			verbosePrint(option, optind, argv, i, argc);
 			if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
