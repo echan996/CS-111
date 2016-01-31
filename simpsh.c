@@ -109,8 +109,10 @@ int main(int argc, char **argv){
                     errors++;
                     break;
                 }
-                double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
-                double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
+                double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec;
+                double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec;
+                fprintf(stdout, "usertime at beginning is %f    ", usrtime);
+                fprintf(stdout, "kertime at beginning is %f\n", kertime);
                 
                 verbosePrint(option, optind, argv, i, argc);
                 if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
@@ -128,6 +130,11 @@ int main(int argc, char **argv){
                         break;
                     }
                 }
+                
+                // long loop for testing timing
+                int count = 0;
+                for(int o = 0; o < 5000; o++)
+                    count *= o;
                 
                 a = open(optarg, O_RDONLY | (O_APPEND & append) | (O_CLOEXEC & cloexec) | (O_CREAT & create) | (O_DIRECTORY & directory) | (O_DSYNC & dsyc) | (O_EXCL & excl) | (O_NOFOLLOW & nofollow)
                          | (O_NONBLOCK & nonblock) | (O_RSYNC & rsync) | (O_SYNC & syc) | (O_TRUNC & trun));
@@ -162,7 +169,7 @@ int main(int argc, char **argv){
                 }
                 break;
             }
-            case 'b':
+            case 'b':{
                 int b = getrusage(RUSAGE_SELF, &thread_timer);
                 if (b == -1){
                     errors++;
@@ -222,7 +229,8 @@ int main(int argc, char **argv){
                     fprintf(stdout, "kernel time: %f\n", kertime);
                 }
                 break;
-            case 'p':
+            }
+            case 'p':{
                 int b = getrusage(RUSAGE_SELF, &thread_timer);
                 if (b == -1){
                     errors++;
@@ -282,6 +290,7 @@ int main(int argc, char **argv){
                     fprintf(stdout, "kernel time: %f\n", kertime);
                 }
                 break;
+            }
                 //COMMAND
             case 'c':{
                 verbosePrint(option, optind, argv, i, argc);
@@ -374,45 +383,56 @@ int main(int argc, char **argv){
                 
                 
             }
-            case 'd':
+            case 'd':{
                 verbose = 1;
                 break;
-                
+            }
                 //dealing with file opening options.
-            case 'e':
+            case 'e':{
                 append = -1;
                 break;
-            case 'f':
+            }
+            case 'f':{
                 cloexec = -1;
                 break;
-            case 'g':
+            }
+            case 'g':{
                 create = -1;
                 break;
-            case 'h':
+            }
+            case 'h':{
                 directory = -1;
                 break;
-            case 'i':
+            }
+            case 'i':{
                 dsyc = -1;
                 break;
-            case 'j':
+            }
+            case 'j':{
                 excl = -1;
                 break;
-            case 'k':
+            }
+            case 'k':{
                 nofollow = -1;
                 break;
-            case 'l':
+            }
+            case 'l':{
                 nonblock = -1;
                 break;
-            case 'm':
+            }
+            case 'm':{
                 rsync = -1;
                 break;
-            case 'n':
+            }
+            case 'n':{
                 syc = -1;
                 break;
-            case 'o':
+            }
+            case 'o':{
                 trun = -1;
                 break;
-            case 'q':
+            }
+            case 'q':{
                 int b = getrusage(RUSAGE_SELF, &thread_timer);
                 if (b == -1){
                     errors++;
@@ -445,7 +465,8 @@ int main(int argc, char **argv){
                     fprintf(stdout, "kernel time: %f\n", kertime);
                 }
                 break;
-            case 'r':
+            }
+            case 'r':{
                 int b = getrusage(RUSAGE_SELF, &thread_timer);
                 if (b == -1){
                     errors++;
@@ -473,7 +494,8 @@ int main(int argc, char **argv){
                     fprintf(stdout, "kernel time: %f\n", kertime);
                 }
                 break;
-            case 's'://catch
+            }
+            case 's':{ //catch
                 int b = getrusage(RUSAGE_SELF, &thread_timer);
                 if (b == -1){
                     errors++;
@@ -501,7 +523,8 @@ int main(int argc, char **argv){
                     fprintf(stdout, "kernel time: %f\n", kertime);
                 }
                 break;
-            case 't'://ignore
+            }
+            case 't': {//ignore
                 int b = getrusage(RUSAGE_SELF, &thread_timer);
                 if (b == -1){
                     errors++;
@@ -529,7 +552,8 @@ int main(int argc, char **argv){
                     fprintf(stdout, "kernel time: %f\n", kertime);
                 }
                 break;
-            case 'u'://default
+            }
+            case 'u':{ //default
                 int b = getrusage(RUSAGE_SELF, &thread_timer);
                 if (b == -1){
                     errors++;
@@ -557,7 +581,8 @@ int main(int argc, char **argv){
                     fprintf(stdout, "kernel time: %f\n", kertime);
                 }
                 break;
-            case 'v':
+            }
+            case 'v':{
                 int b = getrusage(RUSAGE_SELF, &thread_timer);
                 if (b == -1){
                     errors++;
@@ -585,7 +610,8 @@ int main(int argc, char **argv){
                     fprintf(stdout, "kernel time: %f\n", kertime);
                 }
                 break;
-            case 'w':
+            }
+            case 'w':{
                 int b = getrusage(RUSAGE_SELF, &thread_timer);
                 if (b == -1){
                     errors++;
@@ -632,7 +658,8 @@ int main(int argc, char **argv){
                     fprintf(stdout, "kernel time: %f\n", kertime);
                 }
                 break;
-            case 'x': //pipe
+            }
+            case 'x':{ //pipe
                 int b = getrusage(RUSAGE_SELF, &thread_timer);
                 if (b == -1){
                     errors++;
@@ -695,11 +722,14 @@ int main(int argc, char **argv){
                     fprintf(stdout, "kernel time: %f\n", kertime);
                 }
                 break;
-            case 'y':
+            }
+            case 'y':{
                 profile = 1;
                 break;
-            default:
+            }
+            default:{
                 break;
+            }
         }
         
         
