@@ -29,6 +29,7 @@ void sig_handler(int signum){
 	fprintf(stderr, "%d caught\n", signum);
 	_exit(signum);
 };
+
 static struct option long_options[] = {
     { "rdonly", required_argument, 0, 'a' },
     { "wronly", required_argument, 0, 'b' },
@@ -100,7 +101,12 @@ int main(int argc, char **argv){
 	{
 		switch (option){
 		case 'a':
-            verbosePrint(option, optind, argv, i, argc);
+			struct rusage thread_timer;
+			int getrusage(RUSAGE_SELF, &thread_timer);
+			int usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
+			int kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
+
+			verbosePrint(option, optind, argv, i, argc);
 			if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
 			{
 				optind--;
@@ -134,6 +140,13 @@ int main(int argc, char **argv){
 			curfiles++;
 			append = cloexec = create = directory = dsyc = excl = nofollow = nonblock = rsync = syc = trun = 0;
 			//some storage of the open value into some global int array.
+
+			if (profile){
+				getrusage(RUSAGE_SELF, &thread_timer);
+				usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
+				kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
+				//print out the usrtime and kertime? idk
+			}
 			break;
 		case 'b':
             verbosePrint(option, optind, argv, i, argc);
@@ -460,4 +473,4 @@ int main(int argc, char **argv){
  }
 
 
-	
+		
