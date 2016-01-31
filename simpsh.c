@@ -102,7 +102,13 @@ int main(int argc, char **argv){
 		switch (option){
 		case 'a':
 			struct rusage thread_timer;
-			getrusage(RUSAGE_SELF, &thread_timer);
+			int b = getrusage(RUSAGE_SELF, &thread_timer);
+            if (b == -1){
+                errors++;
+                fprintf(stderr, "Error: Could not get resource usage data\n");
+                errors++;
+                break;
+            }
 			time_t usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
 			time_t kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
 
@@ -142,10 +148,17 @@ int main(int argc, char **argv){
 			//some storage of the open value into some global int array.
 
 			if (profile){
-				getrusage(RUSAGE_SELF, &thread_timer);
+				b = getrusage(RUSAGE_SELF, &thread_timer);
+                if (b == -1){
+                    errors++;
+                    fprintf(stderr, "Error: Could not get resource usage data\n");
+                    errors++;
+                    break;
+                }
 				usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
 				kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
-				//print out the usrtime and kertime? idk
+                fprintf(stdout, "user time: %d  ", usrtime);
+                fprintf(stdout, "kernel time: %d\n", kertime);
 			}
 			break;
 		case 'b':
