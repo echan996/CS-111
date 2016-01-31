@@ -8,6 +8,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 struct file_info{
     int descriptor, readable, writable, open;
@@ -19,7 +21,7 @@ struct thread_info{
 struct file_info* open_files;
 struct thread_info* running_threads;
 int maxfiles=10, curfiles=0, maxthreads=10, curthreads=0;
-int verbose = 0;
+int verbose = 0, profile=0;
 int errors = 0; //deal with after
 int maxExit = 0;
 int append=0, cloexec=0, create=0, directory=0, dsyc=0, excl=0, nofollow=0, nonblock=0, rsync=0, syc=0,trun=0;
@@ -52,6 +54,7 @@ static struct option long_options[] = {
 	{ "pause", no_argument, 0, 'v' },
 	{ "wait", no_argument, 0, 'w' },
     { "pipe", no_argument, 0, 'x' },
+	{ "profile",no_argument,0,'y' },
     { 0, 0, 0, 0 }
 };
 
@@ -372,6 +375,8 @@ int main(int argc, char **argv){
 			for (int i = 0; i < curthreads; i++){
 				int status;
 				pid_t thrd = waitpid(-1, &status, 0);
+				if (status > maxExit)
+					maxExit = status;
 				for (int i = 0; i < curthreads;i++)
 					if (thrd == running_threads[i].threadnum){
 					fprintf(stdout, "%d", status);
@@ -416,6 +421,9 @@ int main(int argc, char **argv){
             }
             
             break;
+		case 'y':
+			profile = 1;
+			break;
 		default:
 			break;
 		}
