@@ -131,11 +131,6 @@ int main(int argc, char **argv){
                     }
                 }
                 
-                // long loop for testing timing
-                int count = 0;
-                for(int o = 0; o < 5000; o++)
-                    count *= o;
-                
                 a = open(optarg, O_RDONLY | (O_APPEND & append) | (O_CLOEXEC & cloexec) | (O_CREAT & create) | (O_DIRECTORY & directory) | (O_DSYNC & dsyc) | (O_EXCL & excl) | (O_NOFOLLOW & nofollow)
                          | (O_NONBLOCK & nonblock) | (O_RSYNC & rsync) | (O_SYNC & syc) | (O_TRUNC & trun));
                 
