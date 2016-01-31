@@ -90,6 +90,7 @@ void verbosePrint(char option, int optind, char **argv, int longOptInd, int argc
 }
 
 int main(int argc, char **argv){
+    int optwait = 0;
 	int numArgs = 0, start;
 	open_files = (struct file_info*)malloc(maxfiles*sizeof(struct file_info));
 	running_threads = (struct thread_info*)malloc(maxthreads*sizeof(struct thread_info));
@@ -368,6 +369,7 @@ int main(int argc, char **argv){
 			break;
 		case 'w':
 			verbosePrint(option, optind, argv, i, argc);
+            optwait = 1;
 			for (int i = 0; i < curfiles; i++){
 				if (open_files[i].open)
 					close(open_files[i].descriptor);
@@ -375,8 +377,10 @@ int main(int argc, char **argv){
 			for (int i = 0; i < curthreads; i++){
 				int status;
 				pid_t thrd = waitpid(-1, &status, 0);
-				if (status > maxExit)
-					maxExit = status;
+
+                if (status > maxExit)
+                    maxExit = status;
+
 				for (int i = 0; i < curthreads;i++)
 					if (thrd == running_threads[i].threadnum){
 					fprintf(stdout, "%d", status);
@@ -396,7 +400,12 @@ int main(int argc, char **argv){
             }
                 
             int fd[2];
-            pipe(fd);
+            int p = pipe(fd);
+            if (p){
+                fprintf(stderr, "Error: Unable to create file descriptors.\n");
+                errors++;
+                break;
+            }
             int i;
             for (i = 0; i < 2; i++){ // add two file descriptors to the open_files array
                 if (curfiles >= maxfiles){
@@ -431,8 +440,23 @@ int main(int argc, char **argv){
 
 		
 	}
+    if (!optwait){
+        for (int i = 0; i < curfiles; i++){
+            if (open_files[i].open)
+                close(open_files[i].descriptor);
+        }
+
+        for (int i = 0; i < curthreads; i++){
+            int status;
+            pid_t thrd = waitpid(-1, &status, 0);
+            if (status > maxExit)
+                maxExit = status;
+        }
+    }
 	free(open_files);
-    exit(maxExit);
+    if (errors > 0 && maxExit == 0)
+        maxExit = 1;
+     exit(maxExit);
  }
 
 
