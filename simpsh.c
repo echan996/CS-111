@@ -111,8 +111,7 @@ int main(int argc, char **argv){
                 }
                 double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec/1000000.0;
                 double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec/1000000.0;
-                fprintf(stdout, "usertime at beginning is %f    ", usrtime);
-                fprintf(stdout, "kertime at beginning is %f\n", kertime);
+                
                 
                 verbosePrint(option, optind, argv, i, argc);
                 if ((argv[optind - 1][0] == '-' && argv[optind - 1][1] == '-') || (optind < argc && argv[optind][0] != '-' && argv[optind][1] != '-'))
@@ -262,7 +261,7 @@ int main(int argc, char **argv){
                     fprintf(stderr, "Error: Unable to create file\n");
                     errors++;
                     break;
-                }
+               } 
                 
                 open_files[curfiles].descriptor = a;
                 open_files[curfiles].readable = 1;
