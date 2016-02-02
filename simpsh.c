@@ -629,7 +629,7 @@ int main(int argc, char **argv){
                 break;
             }
             case 'w':{
-                int b = getrusage(RUSAGE_SELF, &thread_timer);
+                int b = getrusage(RUSAGE_CHILDREN, &thread_timer);
                 if (b == -1){
                     errors++;
                     fprintf(stderr, "Error: Could not get resource usage data\n");
@@ -662,7 +662,7 @@ int main(int argc, char **argv){
                 }
                 
                 if (profile){
-                    b = getrusage(RUSAGE_SELF, &thread_timer);
+                    b = getrusage(RUSAGE_CHILDREN, &thread_timer);
                     if (b == -1){
                         errors++;
                         fprintf(stderr, "Error: Could not get resource usage data\n");
