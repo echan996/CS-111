@@ -3,10 +3,6 @@
 redirfd -w 1 c
 redirfd -a 2 d
 pipeline {
-    sort words
-} pipeline {
-    cat b -
+    sort -u big
 }
-tr a-z A-Z
-
-
+tr 0-9 a-j
