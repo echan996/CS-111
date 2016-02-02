@@ -160,7 +160,7 @@ int main(int argc, char **argv){
                     usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
                     kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
                     fprintf(stdout, "user time: %f  ", usrtime);
-                    fprintf(stdout, "kernel time: %f\n", kertime);
+                    fprintf(stdout, "kernel time: %f for --rdonly\n", kertime);
                 }
                 break;
             }
@@ -221,7 +221,7 @@ int main(int argc, char **argv){
                     usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
                     kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
                     fprintf(stdout, "user time: %f  ", usrtime);
-                    fprintf(stdout, "kernel time: %f\n", kertime);
+                    fprintf(stdout, "kernel time: %f for --wronly\n", kertime);
                 }
                 break;
             }
@@ -297,9 +297,7 @@ int main(int argc, char **argv){
 				}
 				double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
 				double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
-				fprintf(stdout, "usertime at beginning is %f    ", usrtime);
-				fprintf(stdout, "kertime at beginning is %f\n", kertime);
-                verbosePrint(option, optind, argv, i, argc);
+				verbosePrint(option, optind, argv, i, argc);
                 int index, count=0;
                 int oldoptind = optind;
                 for (index = optind - 1; index < argc; index++, count++){
@@ -394,7 +392,7 @@ int main(int argc, char **argv){
 						usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
 						kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
 						fprintf(stdout, "user time: %f  ", usrtime);
-						fprintf(stdout, "kernel time: %f\n", kertime);
+						fprintf(stdout, "kernel time: %f for --command\n", kertime);
 					}
                     break;
                     
