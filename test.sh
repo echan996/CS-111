@@ -138,3 +138,37 @@ should_succeed "able to function with two pipes, use file flags and wait"
 should_fail "catches abort"
 
 echo "Success"
+
+echo "Profile case 1: (sort < words | cat b - | tr a-z A-Z > c) 2>> d)"
+echo "simpsh timing"
+./simpsh \
+--rdonly words \
+--pipe \
+--pipe \
+--creat --trunc --wronly c \
+--creat --append --wronly d \
+--profile \
+--command 3 5 6 tr a-z A-Z \
+--command 0 2 6 sort \
+--command 1 4 6 cat b - \
+--wait
+
+echo "bash timing"
+
+time ((sort < words | cat b - | tr a-z A-Z > c) 2>> d) | cat -
+
+
+echo "Profile case 2: ((sort -u a | tr 0-9 a-j > c) 2>>d)"
+
+echo "simpsh timing"
+./simpsh \
+    --rdonly a \
+    --pipe \
+    --creat --wronly c \
+    --creat --wronly d \
+    --profile \
+    --command 1 3 4 tr 0-9 a-j \
+    --command 0 2 4 sort -u \
+    --wait
+
+time ((sort -u a | tr 0-9 a-j > c) 2>>d)|cat -
