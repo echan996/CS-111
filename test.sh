@@ -27,7 +27,9 @@ function should_succeed() {
 }
 touch file1
 touch file2
-base64 /dev/urandom | head -c 50000000 > a
+base64 /dev/urandom | head -c 50000000 > big
+base64 /dev/urandom | head -c 500 > small
+base64 /dev/urandom | head -c 1000000 > medium
 tmp_file=file1
 tmp_file2=file2
 > "$tmp_file"
@@ -141,10 +143,10 @@ should_fail "catches abort"
 
 echo "Success"
 
-echo "Profile case 1: (sort < words | cat b - | tr a-z A-Z > c) 2>> d)"
+echo "Profile case 1: (sort < medium | cat b - | tr a-z A-Z > c) 2>> d) // medium size file"
 echo "simpsh timing"
 ./simpsh \
---rdonly words \
+--rdonly medium \
 --pipe \
 --pipe \
 --creat --trunc --wronly c \
@@ -157,14 +159,14 @@ echo "simpsh timing"
 
 echo "bash timing"
 
-time ((sort < words | cat b - | tr a-z A-Z > c) 2>> d) | cat -
+time ((sort < medium | cat b - | tr a-z A-Z > c) 2>> d) | cat -
 
 
-echo "Profile case 2: ((sort -u a | tr 0-9 a-j > c) 2>>d)"
+echo "Profile case 2: ((sort -u a | tr 0-9 a-j > c) 2>>d) // large size file"
 
 echo "simpsh timing"
 ./simpsh \
-    --rdonly a \
+    --rdonly big \
     --pipe \
     --creat --wronly c \
     --creat --wronly d \
@@ -172,5 +174,20 @@ echo "simpsh timing"
     --command 1 3 4 tr 0-9 a-j \
     --command 0 2 4 sort -u \
     --wait
-
+echo "bash timing"
 time ((sort -u a | tr 0-9 a-j > c) 2>>d)|cat -
+
+echo "Profile case 3: ((sort -u small | tr 0-9 a-j > c) 2>>d) // small size file"
+
+echo "simpsh timing"
+./simpsh \
+    --rdonly small \
+    --pipe \
+    --creat --wronly c \
+    --creat --wronly d \
+    --profile \
+    --command 1 3 4 tr 0-9 a-j \
+    --command 0 2 4 sort -u \
+    --wait
+echo "bash timing"
+time ((sort -u small | tr 0-9 a-j > c) 2>>d)|cat -
