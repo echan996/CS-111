@@ -109,8 +109,8 @@ int main(int argc, char **argv){
                     errors++;
                     break;
                 }
-                double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec;
-                double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec;
+                double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec/1000000.0;
+                double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec/1000000.0;
                 fprintf(stdout, "usertime at beginning is %f    ", usrtime);
                 fprintf(stdout, "kertime at beginning is %f\n", kertime);
                 
@@ -287,7 +287,18 @@ int main(int argc, char **argv){
                 break;
             }
                 //COMMAND
-            case 'c':{
+			case 'c':{  
+				int b = getrusage(RUSAGE_SELF, &thread_timer);
+				if (b == -1){
+					errors++;
+					fprintf(stderr, "Error: Could not get resource usage data\n");
+					errors++;
+					break;
+				}
+				double usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0;
+				double kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0;
+				fprintf(stdout, "usertime at beginning is %f    ", usrtime);
+				fprintf(stdout, "kertime at beginning is %f\n", kertime);
                 verbosePrint(option, optind, argv, i, argc);
                 int index, count=0;
                 int oldoptind = optind;
@@ -372,6 +383,19 @@ int main(int argc, char **argv){
                     running_threads[curthreads].end_ind = optind;
                     running_threads[curthreads].threadnum = childPID;
                     curthreads++;
+					if (profile){
+						b = getrusage(RUSAGE_SELF, &thread_timer);
+						if (b == -1){
+							errors++;
+							fprintf(stderr, "Error: Could not get resource usage data\n");
+							errors++;
+							break;
+						}
+						usrtime = thread_timer.ru_utime.tv_sec + thread_timer.ru_utime.tv_usec / 1000000.0 - usrtime;
+						kertime = thread_timer.ru_stime.tv_sec + thread_timer.ru_stime.tv_usec / 1000000.0 - kertime;
+						fprintf(stdout, "user time: %f  ", usrtime);
+						fprintf(stdout, "kernel time: %f\n", kertime);
+					}
                     break;
                     
                 }
