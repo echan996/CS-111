@@ -175,7 +175,7 @@ echo "simpsh timing"
     --command 0 2 4 sort -u \
     --wait
 echo "bash timing"
-time ((sort -u a | tr 0-9 a-j > c) 2>>d)|cat -
+time ((sort -u big | tr 0-9 a-j > c) 2>>d)|cat -
 
 echo "Profile case 3: ((sort -u small | tr 0-9 a-j > c) 2>>d) // small size file"
 
