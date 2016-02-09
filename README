@@ -1,11 +1,12 @@
 Lab 1
+Design Problem
 CS 111
 Winter 2016
 
 Eric Chan 504447283
 Elise Yuen 604418732
 
-As of part 1a and 1b, our project has no limitations or extra features. On a side note, we found the test
-cases that another student posted on Piazza very useful, so this is the basis of our test.sh used in make
-check.
+For our design problem, we continued part of Lab 1c and compared our performances to ksh and tcsh. When
+attempting to run our tests, run test.sh first in order to create the proper files that are utilized in
+our ksh and tcsh testing.
 
