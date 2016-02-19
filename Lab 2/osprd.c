@@ -44,12 +44,11 @@ MODULE_AUTHOR("Eric Chan and Elise Yuen");
 static int nsectors = 32;
 module_param(nsectors, int, 0);
 
+/***********************************************HELPER FUNCTIONS************************************************/
 struct pidNode {
 	pid_t pid;
 	struct pidNode* next;
 };
-
-
 struct pidList {
 	struct pidNode* head;
 	int size;
@@ -74,14 +73,13 @@ int containsPid(struct pidList* list, pid_t pid){
 	}
 	return (node!=NULL);
 }
+//for some reason, it doesn't work if we pass the pidList as pidList*. So we had to do pidList**?
 void removePid(struct pidList** list, pid_t pid){
 	struct pidNode* node;
-	struct pidNode* toDelete;
-
+	struct pidNode* killNode;
 	if (list == NULL) {
 		return;
 	}
-
 	node = (*list)->head;
 	if (node == NULL) {
 		return;
@@ -95,9 +93,9 @@ void removePid(struct pidList** list, pid_t pid){
 
 	while (node->next != NULL) {
 		if (node->next->pid == pid) {
-			toDelete = node->next;
+			killNode = node->next;
 			node->next = node->next->next;
-			kfree(toDelete);
+			kfree(killNode);
 			(*list)->size--;
 			return;
 		}
@@ -108,7 +106,7 @@ void removePid(struct pidList** list, pid_t pid){
 		*list = NULL;
 	}
 }
-void addPid(struct pidList** list, pid_t pid){
+void addPid(struct pidList** list, pid_t pid){ 
 	struct pidNode* newNode;
 	if (*list == NULL) {
 
@@ -161,11 +159,10 @@ void addTicket(struct ticketList** list, unsigned ticket){
 	}
 	(*list)->size++;
 }
-
 void removeTicket(struct ticketList** list, unsigned ticket) {
 
 	struct ticketNode* node;
-	struct ticketNode* toDelete;
+	struct ticketNode* killNode;
 
 	if (list == NULL) {
 		return;
@@ -182,9 +179,9 @@ void removeTicket(struct ticketList** list, unsigned ticket) {
 	}
 	while (node->next != NULL) {
 		if (node->next->ticket == ticket) {
-			toDelete = node->next;
+			killNode = node->next;
 			node->next = node->next->next;
-			kfree(toDelete);
+			kfree(killNode);
 			(*list)->size--;
 			return;
 		}
@@ -236,7 +233,7 @@ void getNextTicket(osprd_info_t *d){
 		if (!containsTicket(d->exited_tickets, d->ticket_tail))
 			break;
 		else{
-			removeTicket(&d->exited_tickets, d->ticket_tail);
+			removeTicket(&d->exited_tickets, d->ticket_tail); //makes it a bit faster since it wont have to iterate through the entire ticket list.
 
 		}
 	}
@@ -331,9 +328,7 @@ static int osprd_close_last(struct inode *inode, struct file *filp)
 		// as appropriate.
 
 		// Your code here.
-		if (d == NULL){
-			return 1;
-		}
+		
 		osp_spin_lock(&d->mutex);
 		if (!containsPid(d->readLocks, current->pid) && !containsPid(d->writeLocks, current->pid)){
 			osp_spin_unlock(&d->mutex);
@@ -346,12 +341,13 @@ static int osprd_close_last(struct inode *inode, struct file *filp)
 		if (containsPid(d->readLocks, current->pid)){
 			removePid(&d->readLocks, current->pid);
 		}
-
+		
 		if (d->readLocks == NULL && d->writeLocks == NULL)
-			filp->f_flags = filp->f_flags&!F_OSPRD_LOCKED; // set bit flag if no more locks on current device. 
+			filp->f_flags = filp->f_flags^F_OSPRD_LOCKED; // set bit flag if no more locks on current device. 
+		wake_up_all(&d->blockq);
 		osp_spin_unlock(&d->mutex);
 		// This line avoids compiler warnings; you may remove it.
-		wake_up_all(&d->blockq);
+	
 		(void)filp_writable, (void)d;
 
 	}
@@ -503,9 +499,34 @@ int osprd_ioctl(struct inode *inode, struct file *filp,
 		// Otherwise, if we can grant the lock request, return 0.
 
 		// Your code here (instead of the next two lines).
-		eprintk("Attempting to try acquire\n");
-		r = -ENOTTY;
 
+		//so we don't use wait_event_interruptable, we just scan the pid list?
+
+		//write case lol so much easier without ticket handling and stupid interrupts. 
+		if (filp_writable){
+
+			if (d->readLocks != NULL || d->writeLocks != NULL)
+				return -EBUSY;
+			osp_spin_lock(&d->mutex);
+			addPid(&d->writeLocks, current->pid);
+
+			
+			return 0;
+		}
+		else{
+			//read case
+			if (d->writeLocks != NULL){
+				return -EBUSY;
+			}
+			osp_spin_lock(&d->mutex);
+			addPid(&d->readLocks, current->pid);
+					
+		}
+		d->ticket_head++;
+		d->ticket_tail++;
+		filp->f_flags = filp->f_flags | F_OSPRD_LOCKED;
+		osp_spin_unlock(&d->mutex);
+		return 0;
 	}
 	else if (cmd == OSPRDIOCRELEASE) {
 
@@ -520,7 +541,6 @@ int osprd_ioctl(struct inode *inode, struct file *filp,
 		if (!(filp->f_flags & F_OSPRD_LOCKED)){
 			return -EINVAL;
 		}
-
 		else{
 			osp_spin_lock(&d->mutex);
 			if (filp_writable)
@@ -530,8 +550,9 @@ int osprd_ioctl(struct inode *inode, struct file *filp,
 			filp->f_flags = filp->f_flags^F_OSPRD_LOCKED;
 			osp_spin_unlock(&d->mutex);
 			wake_up_all(&d->blockq);
+			
 		}
-
+		return 0;
 	}
 	else
 		r = -ENOTTY;
