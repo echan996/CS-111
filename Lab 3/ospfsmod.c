@@ -713,7 +713,37 @@ add_block(ospfs_inode_t *oi)
 	uint32_t *allocated[2] = { 0, 0 };
 
 	/* EXERCISE: Your code here */
+	uint32_t new_allocated_indirect = 0
+	uint32_t new_allocated_indirect2 = 0;
+	uint32_t new_block = 0;
+	uint32_t *block_ptr = NULL;
+	void* free_block_bitmap = ospfs)block(OSPFS_FREEMAP_BLK);
+	new_block = allocate_block();
+	if (new_block){
+		zero_out_block(new_block);
+	}
+	else{
+		return -ENOSPC;
+	}
+	if (n == OSPFS_MAXFILEBLKS){
+		//todo
+	}
+	if (n>OSPFS_NDIRECT + OSPFS_NINDIRECT){
+		//may need a new indirect block. depends on status. 
+	}
+	else if (n == OSPFS_NDIRECT + OSP_NINDIRECT){
+		//todo allocate a new indiret^2 blockanda new indirect block
+	}
+	else if (n >= OSPFS_NDIRECT){
+		if (n == OSPFS_NDIRECT){
+			//todo allocate a new indirect block
+		}
+	}
+	else{
+		//todo allocae 
+	}
 	return -EIO; // Replace this line
+}
 }
 
 
@@ -883,14 +913,21 @@ ospfs_read(struct file *filp, char __user *buffer, size_t count, loff_t *f_pos)
 		}
 
 		data = ospfs_block(blockno);
-
+		offset = *f_pos % OSPFS_BLKSIZE;
+		n = OSPFS_BLKSIZE - offset;
+		if (n > count - amount){
+			n = count - amount;
+		}
+		retval = copy_to_user(buffer, &(data[offset]), n);
+		if (retval){
+			retval = -EFAULT;
+			goto done;
+		}
 		// Figure out how much data is left in this block to read.
 		// Copy data into user space. Return -EFAULT if unable to write
 		// into user space.
 		// Use variable 'n' to track number of bytes moved.
 		/* EXERCISE: Your code here */
-		retval = -EIO; // Replace these lines
-		goto done;
 
 		buffer += n;
 		amount += n;
@@ -1105,7 +1142,38 @@ ospfs_create(struct inode *dir, struct dentry *dentry, int mode, struct nameidat
 	ospfs_inode_t *dir_oi = ospfs_inode(dir->i_ino);
 	uint32_t entry_ino = 0;
 	/* EXERCISE: Your code here. */
-	return -EINVAL; // Replace this line
+	ospfs_inode_t *file_oi = NULL;
+	ospfs_direntry_t *new_entry = NULL;
+	uint32_t index_off;
+	if (dentry->d_name.len > OSPFS_MAXNAMELEN){
+		return -ENAMETOOLONG;
+	}
+	if (find_direntry(dir_oi, dentry->d - name.name, dentry->d - name.name.len))
+		return -EEXIST;
+	new_entry = create_blank_direntry(dir_oi);
+	if (IS_ERR(new_entry)){
+		return PIR_ERR(new_entry);
+	}
+	entry_ino = find_free_inode();
+	if (entry_ino == 0){
+		return -ENOSPC;
+	}
+	file_oi = ospfs_inode(entry_ino);
+	if (file_oi == NULL){
+		return -EIO;
+	}
+	file_oi->oi_size = 0;
+	file_oi->oi_ftype = OSPFS_FTYPE_REG;
+	file_oi->oinlink = 1;
+	file_oi->oi_mode = mode;
+	for (index_off = 0; index_off<OSPFS_NDIRECT; ++index_off){
+		file_oi->oi_direct[index_off] = 0;
+	}
+	file_oi->oi_indirect = 0;
+	file_oi->oi_indirect2 = 0;
+	new_entry->od_ino = entry_ino;
+	memcpy(new_entry->od_name, dentry->d_name.name, dentry->d_name.len);
+	new_entry->od_name[dentry->d_name.len] = '\0';
 
 	/* Execute this code after your function has successfully created the
 	   file.  Set entry_ino to the created file's inode number before
