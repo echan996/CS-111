@@ -577,6 +577,23 @@ static uint32_t
 allocate_block(void)
 {
 	/* EXERCISE: Your code here */
+    uint32_t start = OSPFS_FREEMAP_BLK; // start of the free-block bitmap
+    uint32_t end = ospfs_super->os_firstinob - 1;
+    
+    int i;
+    for (i = start; i <= end; i++){ // go through the whole
+        void* contents = ospfs_block(i); // get the contents of this block
+        int j;
+        for (j = 0; j < OSPFS_BLKSIZE * 8; j++){
+            if (bitvector_test(contents, j) == 0){ // block is free
+                bitvector_set(contents, j); // snatch this block!!!
+                // some offset stuff
+                // return something
+            }
+        }
+        
+    }
+    
 	return 0;
 }
 
@@ -1119,7 +1136,6 @@ create_blank_direntry(ospfs_inode_t *dir_oi)
 	dir_oi->oi_size = size;
 	return ospfs_inode_data(dir_oi, offset);
 	/* EXERCISE: Your code here. */
-	return ERR_PTR(-EINVAL); // Replace this line
 }
 
 // ospfs_link(src_dentry, dir, dst_dentry
