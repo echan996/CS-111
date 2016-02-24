@@ -719,16 +719,19 @@ add_block(ospfs_inode_t *oi)
 	uint32_t *block_ptr = NULL;
 	void* free_block_bitmap = ospfs)block(OSPFS_FREEMAP_BLK);
 	new_block = allocate_block();
-	if (new_block){
-		zero_out_block(new_block);
+	
+    if (new_block){
+        memset(ospfs_block(new_block), 0, OSPFS_BLKSIZE); // zeros out the newly allocated block
 	}
 	else{
 		return -ENOSPC;
 	}
+    
 	if (n == OSPFS_MAXFILEBLKS){
 		//todo
 	}
-	if (n>OSPFS_NDIRECT + OSPFS_NINDIRECT){
+	
+    if (n>OSPFS_NDIRECT + OSPFS_NINDIRECT){
 		//may need a new indirect block. depends on status. 
 	}
 	else if (n == OSPFS_NDIRECT + OSP_NINDIRECT){
@@ -742,6 +745,7 @@ add_block(ospfs_inode_t *oi)
 	else{
 		//todo allocae 
 	}
+    
 	return -EIO; // Replace this line
 }
 }
