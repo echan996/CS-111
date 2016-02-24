@@ -457,23 +457,6 @@ ospfs_dir_readdir(struct file *filp, void *dirent, filldir_t filldir)
             r = 1;		/* Fix me! */
             break;		/* Fix me! */
         }
-        
-        od = ospfs_inode_data(dir_oi, f_pos - 2);
-        if (od->od_ino){
-            entry_oi = ospfs_inode(od->od_ino);
-            if (entry_oi->oi_ftype == OSPFS_FTYPE_REG){
-                ok_so_far = fill_dir(dirent, od->od_name, strlen(od->od_name), f_pos, od->od_ino, DT_REG);
-            } else if (entry_oi->oi_ftype == OSPFS_FTYPE_DIR){
-                // TODO
-            } else
-                // TODO
-            }
-            if (ok_so_far >= 0){
-                fpos += OSPFS_DIRENTRY_SIZE;
-            }
-        } else {
-            fpos += OSPFS_DIRENTRY_SIZE;
-        }
 
 		/* Get a pointer to the next entry (od) in the directory.
 		 * The file system interprets the contents of a
@@ -496,6 +479,23 @@ ospfs_dir_readdir(struct file *filp, void *dirent, filldir_t filldir)
 		 */
 
 		/* EXERCISE: Your code here */
+    
+        od = ospfs_inode_data(dir_oi, f_pos - 2);
+        if (od->od_ino){
+            entry_oi = ospfs_inode(od->od_ino);
+            if (entry_oi->oi_ftype == OSPFS_FTYPE_REG){
+                ok_so_far = filldir(dirent, od->od_name, strlen(od->od_name), f_pos, od->od_ino, DT_REG);
+            } else if (entry_oi->oi_ftype == OSPFS_FTYPE_DIR){
+                ok_so_far = filldir(dirent, od->od_name, strlen(od->od_name), f_pos, od->od_ino, DT_DIR);
+            } else
+                ok_so_far = filldir(dirent, od->od_name, strlen(od->od_name), f_pos, od->od_ino, DT_LNK);
+            }
+            if (ok_so_far >= 0){
+                fpos += OSPFS_DIRENTRY_SIZE;
+            }
+        } else {
+            fpos += OSPFS_DIRENTRY_SIZE;
+        }
 	}
 
 	// Save the file position and return!
