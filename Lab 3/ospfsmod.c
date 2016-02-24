@@ -632,7 +632,10 @@ static int32_t
 indir2_index(uint32_t b)
 {
 	// Your code here.
-	return -1;
+    if (b >= OSPFS_NDIRECT + OSPFS_NINDIRECT)
+        return 0;
+    else
+        return -1;
 }
 
 
@@ -651,7 +654,12 @@ static int32_t
 indir_index(uint32_t b)
 {
 	// Your code here.
-	return -1;
+    if (b >= OSPFS_NDIRECT && b < OSPFS_NDIRECT + OSPFS_NINDIRECT)
+        return 0;
+    else if (b < OSPFS_NDIRECT)
+        return -1;
+    else
+        return ((b - OSPFS_NDIRECT - OSPFS_NINDIRECT) / OSPFS_NINDIRECT);
 }
 
 
