@@ -771,11 +771,11 @@ add_block(ospfs_inode_t *oi)
 		}
 	}
 	else{
-		//todo allocate 
+		//todo allocate
 	}
     
 	return -EIO; // Replace this line
-}
+
 }
 
 
