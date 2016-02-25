@@ -605,6 +605,12 @@ static void
 free_block(uint32_t blockno)
 {
 	/* EXERCISE: Your code here */
+    if (blockno <= ospfs_super->os_firstinob || blockno >= OSPFS_MAXFILEBLKS)
+        return;
+    
+    void* map = ospfs_block(OSPFS_FREEMAP_BLK);
+    if (bitvector_test(map, blockno) == 0)
+        bitvector_set(map, blockno);
 }
 
 
