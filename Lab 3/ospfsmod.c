@@ -808,7 +808,46 @@ remove_block(ospfs_inode_t *oi)
 	uint32_t n = ospfs_size2nblocks(oi->oi_size);
 
 	/* EXERCISE: Your code here */
-	return -EIO; // Replace this line
+    if (n < 1) // empty file
+        return -EIO; // Replace this line
+    
+    if (n <= OSPFS_NDIRECT) { // direct block range
+        free_block(oi->oi_direct[n - 1]);
+        oi->oi_direct[n - 1] = 0;
+    } else if (n >= OSPFS_NDIRECT && n < OSPFS_NDIRECT + OSPFS_NINDIRECT) { // indirect block range
+        uint32_t* indirect_block = ospfs_block(oi->oi_indirect);
+        
+        free_block(indirect_block[direct_index(n)]);
+        indirect_block[direct_index(n)] = 0;
+        
+        if (direct_index(n) == 0){
+            free_block(oi->oi_indirect);
+            oi->oi_indirect = 0;
+        }
+        
+    } else if (n < OSPFS_MAXFILEBLKS) { // doubly-indirect block range
+        uint32_t* indirect_block = ospfs_block(oi->oi_indirect);
+        uint32_t* indirect2_block = ospfs_block(oi->oi_indirect2);
+        
+        free_block(indirect_block[direct_index(n)]);
+        indirect_block[direct_index(n)] = 0;
+        
+        if (direct_index(n) == 0){
+            free_block(oi->oi_indirect);
+            oi->oi_indirect = 0;
+        }
+        
+        if (indir_index(n) == 0){
+            free_block(oi->oi_indirect2);
+            oi->oi_indirect2 = 0;
+        }
+        
+    } else {
+        return -EIO;
+    }
+    
+    oi->oi_size = OSPFS_BLKSIZE * (n - 1);
+    return 0;
 }
 
 
