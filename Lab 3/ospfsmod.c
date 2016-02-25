@@ -1385,8 +1385,17 @@ ospfs_follow_link(struct dentry *dentry, struct nameidata *nd)
 	ospfs_symlink_inode_t *oi =
 		(ospfs_symlink_inode_t *) ospfs_inode(dentry->d_inode->i_ino);
 	// Exercise: Your code here.
-
-	nd_set_link(nd, oi->oi_symlink);
+	if (strncmp(oi->oi_symlink, "root?", 5) == 0){
+		int path_break = strchr(oi->oi_symlink) - oi->oi_symlink; //turns it from a char pointer into the location in the oi_symlink array
+		if (current->uid == 0){//root
+			oi->oi_symlink[path_break] = '/0';
+			nd_set_link(nd, oi->oi_symlink + 6);
+		}
+		else
+			nd_set_link(nd, oi->oi_symlink + path_break + 1);
+	}
+	else
+		nd_set_link(nd, oi->oi_symlink);
 	return (void *) 0;
 }
 
