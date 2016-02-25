@@ -577,23 +577,15 @@ static uint32_t
 allocate_block(void)
 {
 	/* EXERCISE: Your code here */
-    uint32_t start = OSPFS_FREEMAP_BLK; // start of the free-block bitmap
-    uint32_t end = ospfs_super->os_firstinob - 1;
+    void* map = ospfs_block(OSPFS_FREEMAP_BLK);
     
     int i;
-    for (i = start; i <= end; i++){ // go through the whole
-        void* contents = ospfs_block(i); // get the contents of this block
-        int j;
-        for (j = 0; j < OSPFS_BLKSIZE * 8; j++){
-            if (bitvector_test(contents, j) == 0){ // block is free
-                bitvector_set(contents, j); // snatch this block!!!
-                // some offset stuff
-                // return something
-            }
+    for (i = 0; i < ospfs_super->os_nblocks; i++){
+        if (bitvector_test(map, i) == 1){
+            bitvector_clear(map, i);
+            return i;
         }
-        
     }
-    
 	return 0;
 }
 
