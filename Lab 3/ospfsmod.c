@@ -1358,18 +1358,18 @@ ospfs_create(struct inode *dir, struct dentry *dentry, int mode, struct nameidat
 	if (dentry->d_name.len > OSPFS_MAXNAMELEN){
 		return -ENAMETOOLONG;
 	}
-	if (find_direntry(dir_oi, dentry->d - name.name, dentry->d - name.name.len))
+	if (find_direntry(dir_oi, dentry->d_name.name, dentry->d_name.len))
 		return -EEXIST;
 	new_entry = create_blank_direntry(dir_oi);
 	if (IS_ERR(new_entry)){
-		return PIR_ERR(new_entry);
+		return PTR_ERR(new_entry);
 	}
-	for (entry_ino = 2; entry_ino< ospfs_super->os_ninodes; entry_ino++) {
+	for (entry_ino = 2; entry_ino < ospfs_super->os_ninodes; entry_ino++) {
 		inode_loc = ospfs_inode(entry_ino); 
 		if (inode_loc->oi_nlink == 0) //find free inode.
 			break;
 	}
-	if (entry_ino == ospfs_super->os_niodes){
+	if (entry_ino == ospfs_super->os_ninodes){
 		return -ENOSPC;
 	}
 	file_oi = ospfs_inode(entry_ino);
@@ -1378,7 +1378,7 @@ ospfs_create(struct inode *dir, struct dentry *dentry, int mode, struct nameidat
 	}
 	file_oi->oi_size = 0;
 	file_oi->oi_ftype = OSPFS_FTYPE_REG;
-	file_oi->oinlink = 1;
+	file_oi->oi_nlink = 1;
 	file_oi->oi_mode = mode;
 	for (index_off = 0; index_off<OSPFS_NDIRECT; ++index_off){
 		file_oi->oi_direct[index_off] = 0;
@@ -1434,7 +1434,7 @@ ospfs_symlink(struct inode *dir, struct dentry *dentry, const char *symname)
 	if (dentry->d_name.len > OSPFS_MAXNAMELEN){
 		return -ENAMETOOLONG;
 	}
-	if (find_direntry(dir_oi, dentry->d_name.name, dentry->d - name.name.len))
+	if (find_direntry(dir_oi, dentry->d_name.name, dentry->d_name.len))
 		return -EEXIST;
 	for (entry_ino = 2; entry_ino< ospfs_super->os_ninodes; entry_ino++) {
 		inode_loc = ospfs_inode(entry_ino);
@@ -1447,9 +1447,9 @@ ospfs_symlink(struct inode *dir, struct dentry *dentry, const char *symname)
 		return entry_ino;
 	entry_ino = find_direntry((ospfs_inode_t*)ospfs_inode(dir->i_ino), dentry->d_name.name, dentry->d_name.len)->od_ino;
 	new_link = (ospfs_symlink_inode_t*) ospfs_inode(entry_ino);
-	link->oi_size = strlen(symname);
-	link->oi_ftype = OSPFS_FTYPE_SYMLINK;
-	link->oi_nlink = 1;
+	new_link->oi_size = strlen(symname);
+	new_link->oi_ftype = OSPFS_FTYPE_SYMLINK;
+	new_link->oi_nlink = 1;
 	memcpy(link->oi_symlink, symname, link->oi_size);
 	/* EXERCISE: Your code here. */
 	
