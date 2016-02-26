@@ -764,7 +764,7 @@ add_block(ospfs_inode_t *oi)
 			return -ENOSPC;
 		}
 		memset(ospfs_block(new_block), 0, OSPFS_BLKSIZE);
-		oi->oi_direct[n] = direct;
+		oi->oi_direct[n] = new_block;
 	}
 	else if(n < OSPFS_NDIRECT + OSPFS_NINDIRECT){
 		//may need a new indirect block. depends on status. 
@@ -828,7 +828,7 @@ add_block(ospfs_inode_t *oi)
 			return -ENOSPC;
 		}
 		memset(ospfs_block(new_block), 0, OSPFS_BLKSIZE);
-		((uint32_t*)ospfs_block(new_allocated_indirect))[direct_index(n)] = direct;
+		((uint32_t*)ospfs_block(new_allocated_indirect))[direct_index(n)] = new_block;
 	}
 
 	else{
