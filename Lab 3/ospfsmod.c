@@ -1434,7 +1434,7 @@ ospfs_symlink(struct inode *dir, struct dentry *dentry, const char *symname)
 	if (dentry->d_name.len > OSPFS_MAXNAMELEN){
 		return -ENAMETOOLONG;
 	}
-	if (find_direntry(dir_oi, dentry->d - name.name, dentry->d - name.name.len))
+	if (find_direntry(dir_oi, dentry->d_name.name, dentry->d - name.name.len))
 		return -EEXIST;
 	for (entry_ino = 2; entry_ino< ospfs_super->os_ninodes; entry_ino++) {
 		inode_loc = ospfs_inode(entry_ino);
@@ -1445,10 +1445,10 @@ ospfs_symlink(struct inode *dir, struct dentry *dentry, const char *symname)
 	entry_ino = ospfs_create(dir, dentry, dir_oi->oi_mode, NULL);
 	if (entry_ino != 0)
 		return entry_ino;
-	entry_ino = find_direntry(osfps_inode(dir->i_ino), dentry->d_name.name, dentry->d_name.len)->od_ino;
-	new_link = (ospfs_symlink_inode_t*) ospfd_inode(entry_ino);
+	entry_ino = find_direntry((ospfs_inode_t*)ospfs_inode(dir->i_ino), dentry->d_name.name, dentry->d_name.len)->od_ino;
+	new_link = (ospfs_symlink_inode_t*) ospfs_inode(entry_ino);
 	link->oi_size = strlen(symname);
-	link->oi_ftype = OSPFS_TYPE_SYMLINK;
+	link->oi_ftype = OSPFS_FTYPE_SYMLINK;
 	link->oi_nlink = 1;
 	memcpy(link->oi_symlink, symname, link->oi_size);
 	/* EXERCISE: Your code here. */
@@ -1486,9 +1486,9 @@ ospfs_follow_link(struct dentry *dentry, struct nameidata *nd)
 		(ospfs_symlink_inode_t *) ospfs_inode(dentry->d_inode->i_ino);
 	// Exercise: Your code here.
 	if (strncmp(oi->oi_symlink, "root?", 5) == 0){
-		int path_break = strchr(oi->oi_symlink) - oi->oi_symlink; //turns it from a char pointer into the location in the oi_symlink array
+		int path_break = strchr(oi->oi_symlink, ':') - oi->oi_symlink; //turns it from a char pointer into the location in the oi_symlink array
 		if (current->uid == 0){//root
-			oi->oi_symlink[path_break] = '/0';
+			oi->oi_symlink[path_break] = '\0';
 			nd_set_link(nd, oi->oi_symlink + 6);
 		}
 		else
