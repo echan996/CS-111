@@ -487,19 +487,19 @@ ospfs_dir_readdir(struct file *filp, void *dirent, filldir_t filldir)
                 ok_so_far = filldir(dirent, od->od_name, strlen(od->od_name), f_pos, od->od_ino, DT_REG);
             } else if (entry_oi->oi_ftype == OSPFS_FTYPE_DIR){
                 ok_so_far = filldir(dirent, od->od_name, strlen(od->od_name), f_pos, od->od_ino, DT_DIR);
-            } else
+            } else {
                 ok_so_far = filldir(dirent, od->od_name, strlen(od->od_name), f_pos, od->od_ino, DT_LNK);
             }
             if (ok_so_far >= 0){
-                fpos += OSPFS_DIRENTRY_SIZE;
+                f_pos += OSPFS_DIRENTRY_SIZE;
             }
         } else {
-            fpos += OSPFS_DIRENTRY_SIZE;
+            f_pos += OSPFS_DIRENTRY_SIZE;
         }
-	}
+    }
 
 	// Save the file position and return!
-	filp->f_pos = f_pos;
+	file->f_pos = f_pos;
     if (r == 1) {
         return r;
     } else {
@@ -741,7 +741,7 @@ add_block(ospfs_inode_t *oi)
 	uint32_t *allocated[2] = { 0, 0 };
 
 	/* EXERCISE: Your code here */
-	uint32_t new_allocated_indirect = 0
+    uint32_t new_allocated_indirect = 0;
 	uint32_t new_allocated_indirect2 = 0;
 	uint32_t new_block = 0;
 	
