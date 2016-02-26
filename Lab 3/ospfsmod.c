@@ -499,7 +499,7 @@ ospfs_dir_readdir(struct file *filp, void *dirent, filldir_t filldir)
     }
 
 	// Save the file position and return!
-	file->f_pos = f_pos;
+	filp->f_pos = f_pos;
     if (r == 1) {
         return r;
     } else {
