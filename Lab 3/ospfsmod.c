@@ -744,8 +744,8 @@ add_block(ospfs_inode_t *oi)
 	uint32_t new_allocated_indirect = 0
 	uint32_t new_allocated_indirect2 = 0;
 	uint32_t new_block = 0;
-	uint32_t *block_ptr = NULL;
-	void* free_block_bitmap = ospfs_block(OSPFS_FREEMAP_BLK);
+	
+	//void* free_block_bitmap = ospfs_block(OSPFS_FREEMAP_BLK);
 	new_block = allocate_block();
 	
     if (new_block){
@@ -786,7 +786,7 @@ add_block(ospfs_inode_t *oi)
 			return -ENOSPC;
 		}
 		memset(ospfs_block(new_block), 0, OSPFS_BLKSIZE);
-		ospfs_block(oi->oi_indirect)[direct_index(n)] = new_block;
+		((uint32_t*)ospfs_block(oi->oi_indirect))[direct_index(n)] = new_block;
 	}
 	else if (n < OSPFS_MAXFILEBLKS){
 		//todo allocate a new indiret^2 block and a new indirect block
@@ -800,7 +800,7 @@ add_block(ospfs_inode_t *oi)
 			oi->oi_indirect2 = allocated[0];
 		}
 		//allocate indirect block
-		new_allocated_indirect = ospfs_block(oi->oi_indirect2)[indir_index(n)];
+		new_allocated_indirect = ((uint32_t*)ospfs_block(oi->oi_indirect2))[indir_index(n)];
 		if (!new_allocated_indirect){
 			allocated[1] = allocate_block();
 			if (allocated[1] == NULL){
@@ -828,7 +828,7 @@ add_block(ospfs_inode_t *oi)
 			return -ENOSPC;
 		}
 		memset(ospfs_block(new_block), 0, OSPFS_BLKSIZE);
-		ospfs_block(new_allocated_indirect)[direct_index(n)] = direct;
+		((uint32_t*)ospfs_block(new_allocated_indirect))[direct_index(n)] = direct;
 	}
 
 	else{
@@ -888,7 +888,7 @@ remove_block(ospfs_inode_t *oi)
         
     } else if (n < OSPFS_MAXFILEBLKS) { // doubly-indirect block range
         uint32_t* indirect_block = ospfs_block(oi->oi_indirect);
-        uint32_t* indirect2_block = ospfs_block(oi->oi_indirect2);
+        //uint32_t* indirect2_block = ospfs_block(oi->oi_indirect2);
         
         free_block(indirect_block[direct_index(n)]);
         indirect_block[direct_index(n)] = 0;
@@ -1238,10 +1238,10 @@ create_blank_direntry(ospfs_inode_t *dir_oi)
 	// 2. If there's no empty entries, add a block to the directory.
 	//    Use ERR_PTR if this fails; otherwise, clear out all the directory
 	//    entries and return one of them.
-	for (offset = 0; offset < dir_oi->oi_size; offset += OSFPS_DIRENTRY_SIZE){
+	for (offset = 0; offset < dir_oi->oi_size; offset += OSPFS_DIRENTRY_SIZE){
 		entry = ospfs_inode_data(dir_oi, offset);
-		if (od->od_ino == 0)
-			return od;
+		if (entry->od_ino == 0)
+			return entry;
 	}
 	//need to change size? ospfs_size2nblocks does this
 	size = ospfs_size2nblocks(dir_oi->oi_size + 1)*OSPFS_BLKSIZE;
@@ -1309,7 +1309,7 @@ ospfs_link(struct dentry *src_dentry, struct inode *dir, struct dentry *dst_dent
 
 	d_entry->od_ino = src_dentry->d_inode->i_ino;
 	memcpy(d_entry->od_name, dst_dentry->d_name.name, dst_dentry->d_name.len);
-	new_entry->od_name[dst_dentry->d_name.len] = '\0';
+	d_entry->od_name[dst_dentry->d_name.len] = '\0';
 	src_oi->oi_nlink++;
 	//copy data
 
@@ -1450,7 +1450,7 @@ ospfs_symlink(struct inode *dir, struct dentry *dentry, const char *symname)
 	new_link->oi_size = strlen(symname);
 	new_link->oi_ftype = OSPFS_FTYPE_SYMLINK;
 	new_link->oi_nlink = 1;
-	memcpy(link->oi_symlink, symname, link->oi_size);
+	memcpy(new_link->oi_symlink, symname, new_link->oi_size);
 	/* EXERCISE: Your code here. */
 	
 	/* Execute this code after your function has successfully created the
