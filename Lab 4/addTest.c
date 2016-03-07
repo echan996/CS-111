@@ -70,7 +70,7 @@ int main(int argc, char** argv){
 	clock_gettime(CLOCK_MONOTONIC, timer);
 	time_init = timer.tv_sec * 1000000000 + timer.tv_nsec;
 	for (int a = 0, create_check = 0; a < threads; a++){
-		create_check = pthread_create(tids + a, 0, &thread_action, &a);
+		create_check = pthread_create(tids + a, 0, thread_action, &a);
 		if (create_check){
 			fprintf(stderr, "Error: unable to create thread\n");
 		}
@@ -78,9 +78,10 @@ int main(int argc, char** argv){
 	for (int a = 0; a < threads; a++){
 		pthread_join(tids[i], 0);
 	}
-	free(tids);
+	
 	
 	clock_gettime(CLOCK_MONOTONIC, timer);
+	free(tids);
 	time_finish = timer.tv_sec * 1000000000 + timer.tv_nsec - time_init;
 	operations = threads* iterations * 2;
 	fprintf(stdout, "%d threads x %d 10000 iterations x (add + subtract) = %l operations\n", threads, iterations, operations);
