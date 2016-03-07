@@ -3,6 +3,7 @@
 #include <getopt.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <time.h>
 #include <pthread.h>
 #include <sys/resource.h>
 typedef struct s_thread_info{
@@ -45,7 +46,7 @@ int main(int argc, char** argv){
 	while ((option = (char)getopt_long(argc, argv, "", long_options, &i)) != -1){
 		switch (option){
 		case 'a':
-			if (threads=atoi(optarg) == 0){
+			if (threads = atoi(optarg) == 0){
 				fprintf(stderr, "Argument must be positive integer\n");
 			}
 			break;
@@ -53,6 +54,10 @@ int main(int argc, char** argv){
 			if (iterations = atoi(optarg) == 0){
 				fprintf(stderr, "Argument must be positive integer\n");
 			}
+			break;
+
+		default:
+			fprintf(stderr, "Invalid argument\n");
 			break;
 		}
 	}
@@ -63,9 +68,9 @@ int main(int argc, char** argv){
 		exit(1);
 	}
 	clock_gettime(CLOCK_MONOTONIC, timer);
-	time_init = time.tv_sec * 1000000000 + time.tv_nsec;
+	time_init = timer.tv_sec * 1000000000 + timer.tv_nsec;
 	for (int a = 0, create_check = 0; a < threads; a++){
-		create_check = pthread_create(tids + a, 0, &add, &a);
+		create_check = pthread_create(tids + a, 0, &thread_action, &a);
 		if (create_check){
 			fprintf(stderr, "Error: unable to create thread\n");
 		}
@@ -74,9 +79,9 @@ int main(int argc, char** argv){
 		pthread_join(tids[i], 0);
 	}
 	free(tids);
-	free(a);
+	
 	clock_gettime(CLOCK_MONOTONIC, timer);
-	time_finish = time.tv_sec * 1000000000 + time.tv_nsec - time_init;
+	time_finish = timer.tv_sec * 1000000000 + timer.tv_nsec - time_init;
 	operations = threads* iterations * 2;
 	fprintf(stdout, "%d threads x %d 10000 iterations x (add + subtract) = %l operations\n", threads, iterations, operations);
 	if (counter != 0){
