@@ -33,12 +33,13 @@ int main(int argc, char** argv){
 	int threads, iterations;
 	threads = iterations = 1;
 	int i = 0;
-	thread_info a;
+	struct thread_info a;
 	a.n_count = &counter;
 	a.add_amount = 1;
 	long operations;
 	double per_op;
 	long long time_init, time_finish;
+	char option;
 	while ((option = (char)getopt_long(argc, argv, "", long_options, &i)) != -1){
 		switch (option){
 		case 'a':
@@ -59,7 +60,7 @@ int main(int argc, char** argv){
 		fprintf(stderr, "Error: memory not allocated\n");
 		exit(1);
 	}
-	clock_getTime(CLOCK_MONOTONIC, time);
+	clock_gettime(CLOCK_MONOTONIC, time);
 	time_init = time.tv_sec * 1000000000 + time.tv_nsec;
 	for (int a = 0, create_check = 0; a < threads; a++){
 		create_check = pthread_create(tids + a, 0, add, &a);
@@ -71,7 +72,7 @@ int main(int argc, char** argv){
 		pthread_join(tids[i], 0);
 	}
 	free(tids);
-	clock_getTime(CLOCK_MONOTONIC, time);
+	clock_gettime(CLOCK_MONOTONIC, time);
 	time_finish = time.tv_sec * 1000000000 + time.tv_nsec - time_init;
 	operations = threads* iterations * 2;
 	fprintf(stdout, "%d threads x %d 10000 iterations x (add + subtract) = %l operations\n", threads, iterations, operations);
