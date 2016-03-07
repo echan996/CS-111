@@ -32,6 +32,7 @@ static struct option long_options[] = {
 
 
 int main(int argc, char** argv){
+	printf("suck my dick");
 	int threads, iterations;
 	threads = iterations = 1;
 	int i = 0;
