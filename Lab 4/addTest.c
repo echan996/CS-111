@@ -6,23 +6,18 @@
 #include <time.h>
 #include <pthread.h>
 #include <sys/resource.h>
-typedef struct s_thread_info{
-	void* n_count;
-	int add_amount;
-}thread_info;
+
+long long counter = 0;
 void add(long long* pointer, long long value) {
 	long long sum = *pointer + value;
 	*pointer = sum;
 }
-void thread_action(void* arg){
-	thread_info t = *(thread_info*)arg;
-	long long* pointer = t.n_count;
-	int value = t.add_amount;
-	add(pointer, value);	
-	add(pointer, -value);
+void* thread_action(void* arg){
+	add(&counter, 1);	
+	add(&counter, -1);
 }
 
-long long counter = 0;
+
 struct timespec timer;
 static struct option long_options[] = {
 		{ "--threads", required_argument, 0, 'a' },
@@ -36,9 +31,6 @@ int main(int argc, char** argv){
 	int threads, iterations;
 	threads = iterations = 1;
 	int i = 0;
-	thread_info a;
-	a.n_count = &counter;
-	a.add_amount = 1;
 	long operations;
 	double per_op;
 	long long time_init, time_finish;
@@ -62,7 +54,6 @@ int main(int argc, char** argv){
 		}
 	}
 	pthread_t *tids = malloc(threads*sizeof(pthread_t));
-	
 	if (tids == NULL){
 		fprintf(stderr, "Error: memory not allocated\n");
 		exit(1);
@@ -84,7 +75,7 @@ int main(int argc, char** argv){
 	free(tids);
 	time_finish = timer.tv_sec * 1000000000 + timer.tv_nsec - time_init;
 	operations = threads* iterations * 2;
-	fprintf(stdout, "%d threads x %d 10000 iterations x (add + subtract) = %l operations\n", threads, iterations, operations);
+	fprintf(stdout, "%d threads x %d iterations x (add + subtract) = %ld operations\n", threads, iterations, operations);
 	if (counter != 0){
 		fprintf(stderr, "Error: final count = %lld\n", counter);
 	}
