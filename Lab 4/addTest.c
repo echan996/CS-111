@@ -39,17 +39,17 @@ int main(int argc, char** argv){
 		switch (option){
 		case 'a':
 			if (threads = atoi(optarg) == 0){
-				fprintf(stderr, "Argument must be positive integer\n");
+				fprintf(stderr, "Error: Argument must be positive integer\n");
 			}
 			break;
 		case 'b':
 			if (iterations = atoi(optarg) == 0){
-				fprintf(stderr, "Argument must be positive integer\n");
+				fprintf(stderr, "Error: Argument must be positive integer\n");
 			}
 			break;
 
 		default:
-			fprintf(stderr, "Invalid argument\n");
+			fprintf(stderr, "Error: Invalid argument\n");
 			break;
 		}
 	}
