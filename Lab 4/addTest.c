@@ -14,11 +14,11 @@ void add(long long* pointer, long long value) {
 	*pointer = sum;
 }
 void* thread_action(void* arg){
-	long long iterations = *(long long*)arg;
-	for (int i = 0; i < iterations;i++)
-		add(&counter, 1);	
-	for (int i = 0; i < iterations;i++)
+	int iterations = *(int*)arg;
+	for (int i = 0; i < iterations; i++){
+		add(&counter, 1);
 		add(&counter, -1);
+	}
 }
 
 
@@ -32,7 +32,6 @@ static struct option long_options[] = {
 
 
 int main(int argc, char** argv){
-	printf("suck my dick");
 	int threads, iterations;
 	threads = iterations = 1;
 	int i = 0;
@@ -73,7 +72,7 @@ int main(int argc, char** argv){
 		}
 	}
 	for (int a = 0; a < threads; a++){
-		pthread_join(tids[i], 0);
+		pthread_join(tids[a], 0);
 	}
 	
 	
@@ -87,6 +86,6 @@ int main(int argc, char** argv){
 	}
 	fprintf(stdout, "elapsed time: %lld\n", time_finish);
 	per_op = time_finish / operations;
-	fprintf(stdout, "per operation: %f", per_op);
+	fprintf(stdout, "per operation: %f\n", per_op);
 	return 0;
 }
