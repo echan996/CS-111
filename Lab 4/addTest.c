@@ -54,7 +54,7 @@ int main(int argc, char** argv){
 			break;
 
 		default:
-			fprintf(stderr, "Invalid argument\n");
+			fprintf(stderr, "Error: Invalid argument\n");
 			break;
 		}
 	}
