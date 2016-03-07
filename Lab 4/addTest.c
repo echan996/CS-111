@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <unistd.h>
-#include <time.h>
+#include <sys/time.h>
+#include <pthread.h>
+#include <sys/resource.h>
 typedef struct thread_info{
 	void* n_count;
 	int add_amount;
