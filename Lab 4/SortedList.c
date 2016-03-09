@@ -38,6 +38,7 @@ int SortedList_delete(SortedListElement_t *element){
 
 	p->next = n;
 	n->prev = p;
+	delete element;
 	return 0;
 }
 
