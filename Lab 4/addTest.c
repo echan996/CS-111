@@ -11,8 +11,9 @@
 char locker = '\0';
 long long counter = 0;
 int opt_yield=0;
-pthread_mutex_t test_mutex;
-pthread_mutex_init(&test_mutex, NULL);
+int s_test_lock = 0;
+pthread_mutex_t m_test_mutex;
+
 void add(long long* pointer, long long value) {
 	long long sum = *pointer + value;
 	if (opt_yield)
@@ -23,13 +24,21 @@ void* thread_action(void* arg){
 	int iterations = *(int*)arg;
 	if (locker == 'm'){
 		for (int i = 0; i < iterations; i++){
-			pthread_mutex_lock(&test_mutex);
+			pthread_mutex_lock(&m_test_mutex);
 			add(&counter, 1);
 			add(&counter, -1);
-			pthread_mutex_unlock(&test_mutex);
+			pthread_mutex_unlock(&m_test_mutex);
 		}
 	}
-	else{
+	else if(locker=='s'){
+		for (int i = 0; i < iterations; i++){
+			while (__sync_lock_test_and_set(&s_test_lock));
+			add(&counter, 1);
+			add(&counter, -1);
+			__sync_lock_release(&s_test_lock);
+		}
+	}
+	else if(locker=='\0'){
 		for (int i = 0; i < iterations; i++){
 			add(&counter, 1);
 			add(&counter, -1);
@@ -50,6 +59,7 @@ static struct option long_options[] = {
 
 
 int main(int argc, char** argv){
+	pthread_mutex_init(&m_test_mutex, NULL);
 	int threads, iterations;
 	threads = iterations = 1;
 	int i = 0;
@@ -74,9 +84,8 @@ int main(int argc, char** argv){
 				opt_yield = 1;
 			break;
 		case 'd':
-			if (optarg[0] == 'm'){
-				locker = 'm';
-			}
+			locker = optarg[0];
+			break;
 
 		default:
 			fprintf(stderr, "Error: Invalid argument\n");
