@@ -8,6 +8,7 @@
 #include <time.h>
 #include <pthread.h>
 #include <sys/resource.h>
+#include "SortedList.c"
 char locker = '\0';
 long long counter = 0;
 int opt_yield=0;
@@ -108,6 +109,15 @@ int main(int argc, char** argv){
         }
     }
     
+    // initialize empty list
+    SortedList_t *list = (SortedList_t *)malloc(sizeof(SortedList_t));
+    list->next = NULL;
+    list->prev = NULL;
+    list->key = NULL;
+    
+    for (int e = 0; e < threads*iterations; e++){
+        
+    }
     
     pthread_t *tids = malloc(threads*sizeof(pthread_t));
     if (tids == NULL){
