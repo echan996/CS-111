@@ -47,7 +47,8 @@ operation becomes cheaper and cheaper because we divide the child thread set up 
 (plus the little time that each of the iterations add) amongst more operations.
 
 2) We can find the “correct” cost by increasing the number of operations until we 
-find the limit. This represents the “correct” cost because the set up time becomes negligible when divided amongst so many iterations. 
+find the limit. This represents the “correct” cost because the set up time becomes 
+negligible when divided amongst so many iterations. 
 
 3) When yield is enable, we have a much larger overall time, indicating that the
 operations are much slower when yield is on that when it is off. Yield means that
@@ -64,7 +65,10 @@ Thus, we can get best “correct” results regarding operations when yield is n
 
 
 QUESTIONS 1.3
-1) 
+1) Firstly, there are not many threads competing for the lock, so the slowdown will not be
+as noticable. There aren't many computations for the lock for a low number of threads, so it 
+won't take very long to get the lock and the difference won't be very noticable. The price of
+maintaining a lock is cheap; the main cost comes from threads 
 
 2) 
 

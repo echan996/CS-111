@@ -20,6 +20,7 @@ void add(long long* pointer, long long value) {
 		pthread_yield();
 	*pointer = sum;
 }
+
 void* thread_action(void* arg){
 	int iterations = *(int*)arg;
 	if (locker == 'm'){
@@ -46,14 +47,14 @@ void* thread_action(void* arg){
 				if (opt_yield)
 					pthread_yield();
 				sum = old + 1;
-			}while(__sync_val_compare_and_swap(&counter, old, sum)==counter);
+			}while(__sync_val_compare_and_swap(&counter, old, sum)!=old);
 
 			do{
 				old = counter;
 				if (opt_yield)
 					pthread_yield();
 				sum = old - 1;
-			} while (__sync_val_compare_and_swap(&counter, old, sum) == counter);
+			} while (__sync_val_compare_and_swap(&counter, old, sum) != old);
 		}
 	}
 	else if(locker=='\0'){
