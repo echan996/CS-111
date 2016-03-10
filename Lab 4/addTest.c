@@ -1,4 +1,5 @@
 #define _POSIX_C_SOURCE 199309L
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
@@ -7,9 +8,11 @@
 #include <time.h>
 #include <pthread.h>
 #include <sys/resource.h>
-
+char locker = '\0';
 long long counter = 0;
 int opt_yield=0;
+pthread_mutex_t test_mutex;
+pthread_mutex_init(&test_mutex, NULL);
 void add(long long* pointer, long long value) {
 	long long sum = *pointer + value;
 	if (opt_yield)
@@ -18,9 +21,19 @@ void add(long long* pointer, long long value) {
 }
 void* thread_action(void* arg){
 	int iterations = *(int*)arg;
-	for (int i = 0; i < iterations; i++){
-		add(&counter, 1);
-		add(&counter, -1);
+	if (locker == 'm'){
+		for (int i = 0; i < iterations; i++){
+			pthread_mutex_lock(&test_mutex);
+			add(&counter, 1);
+			add(&counter, -1);
+			pthread_mutex_unlock(&test_mutex);
+		}
+	}
+	else{
+		for (int i = 0; i < iterations; i++){
+			add(&counter, 1);
+			add(&counter, -1);
+		}
 	}
 }
 
@@ -31,6 +44,7 @@ static struct option long_options[] = {
 		{ "iter", required_argument, 0, 'b' },
 		{ "iterations", required_argument, 0, 'b' },
 		{ "yield", required_argument, 0, 'c' },
+		{ "sync", required_argument, 0, 'd' },
 		{0,0,0,0}
 };
 
@@ -48,7 +62,6 @@ int main(int argc, char** argv){
 		case 'a':
 			if ((threads = atoi(optarg)) == 0){
 				fprintf(stderr, "Argument must be positive integer\n");
-				
 			}
 			break;
 		case 'b':
@@ -60,6 +73,11 @@ int main(int argc, char** argv){
 			if (atoi(optarg) == 1)
 				opt_yield = 1;
 			break;
+		case 'd':
+			if (optarg[0] == 'm'){
+				locker = 'm';
+			}
+
 		default:
 			fprintf(stderr, "Error: Invalid argument\n");
 			break;
