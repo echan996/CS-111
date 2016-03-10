@@ -57,12 +57,14 @@ void* thread_action(void* arg){
 			} while (__sync_val_compare_and_swap(&counter, old, sum) != old);
 		}
 	}
-	else if(locker=='\0'){
+	else if (locker == '\0'){
 		for (int i = 0; i < iterations; i++){
 			add(&counter, 1);
 			add(&counter, -1);
 		}
 	}
+	else
+		fprintf(stderr, "Error: Invalid sync option\n");
 }
 
 
@@ -90,12 +92,12 @@ int main(int argc, char** argv){
 		switch (option){
 		case 'a':
 			if ((threads = atoi(optarg)) == 0){
-				fprintf(stderr, "Argument must be positive integer\n");
+				fprintf(stderr, "Error: Argument must be positive integer\n");
 			}
 			break;
 		case 'b':
 			if ((iterations = atoi(optarg)) == 0){
-				fprintf(stderr, "Argument must be positive integer\n");
+				fprintf(stderr, "Error: Argument must be positive integer\n");
 			}
 			break;
 		case 'c':
