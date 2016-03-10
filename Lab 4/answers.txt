@@ -51,11 +51,16 @@ find the limit. This represents the “correct” cost because the set up time b
 
 3) When yield is enable, we have a much larger overall time, indicating that the
 operations are much slower when yield is on that when it is off. Yield means that
-So, we can see that this overall time
-difference is due to the time spent context switching between threads each time
-yield is called.
+the thread gives up the CPU in order to let another thread have its turn to run. So,
+we can see that this overall time difference is due to the time spent context
+switching between threads each time yield is called.
 
-4) 
+4) We should not trust the resulting timings using yield to give us reliable or 
+correct results. Since so much of the program is spent doing context switches, we
+can’t use this value as a valid indicator of how long each operation actually takes.
+Context switching isn’t considered useful work, so we should not factor this into 
+our overall time when calculating the time for the actual operations in themselves.
+Thus, we can get best “correct” results regarding operations when yield is not used.
 
 
 QUESTIONS 1.3
