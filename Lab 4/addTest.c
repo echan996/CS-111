@@ -1,4 +1,5 @@
 #define _POSIX_C_SOURCE 199309L
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
@@ -7,17 +8,41 @@
 #include <time.h>
 #include <pthread.h>
 #include <sys/resource.h>
-
+char locker = '\0';
 long long counter = 0;
+int opt_yield=0;
+int s_test_lock = 0;
+pthread_mutex_t m_test_mutex;
+
 void add(long long* pointer, long long value) {
 	long long sum = *pointer + value;
+	if (opt_yield)
+		pthread_yield();
 	*pointer = sum;
 }
 void* thread_action(void* arg){
 	int iterations = *(int*)arg;
-	for (int i = 0; i < iterations; i++){
-		add(&counter, 1);
-		add(&counter, -1);
+	if (locker == 'm'){
+		for (int i = 0; i < iterations; i++){
+			pthread_mutex_lock(&m_test_mutex);
+			add(&counter, 1);
+			add(&counter, -1);
+			pthread_mutex_unlock(&m_test_mutex);
+		}
+	}
+	else if(locker=='s'){
+		for (int i = 0; i < iterations; i++){
+			while (__sync_lock_test_and_set(&s_test_lock));
+			add(&counter, 1);
+			add(&counter, -1);
+			__sync_lock_release(&s_test_lock);
+		}
+	}
+	else if(locker=='\0'){
+		for (int i = 0; i < iterations; i++){
+			add(&counter, 1);
+			add(&counter, -1);
+		}
 	}
 }
 
@@ -27,11 +52,14 @@ static struct option long_options[] = {
 		{ "threads", required_argument, 0, 'a' },
 		{ "iter", required_argument, 0, 'b' },
 		{ "iterations", required_argument, 0, 'b' },
+		{ "yield", required_argument, 0, 'c' },
+		{ "sync", required_argument, 0, 'd' },
 		{0,0,0,0}
 };
 
 
 int main(int argc, char** argv){
+	pthread_mutex_init(&m_test_mutex, NULL);
 	int threads, iterations;
 	threads = iterations = 1;
 	int i = 0;
@@ -44,13 +72,19 @@ int main(int argc, char** argv){
 		case 'a':
 			if ((threads = atoi(optarg)) == 0){
 				fprintf(stderr, "Argument must be positive integer\n");
-				
 			}
 			break;
 		case 'b':
 			if ((iterations = atoi(optarg)) == 0){
 				fprintf(stderr, "Argument must be positive integer\n");
 			}
+			break;
+		case 'c':
+			if (atoi(optarg) == 1)
+				opt_yield = 1;
+			break;
+		case 'd':
+			locker = optarg[0];
 			break;
 
 		default:
