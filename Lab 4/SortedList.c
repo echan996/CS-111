@@ -20,18 +20,33 @@ void SortedList_insert(SortedList_t *list, SortedListElement_t *element){
         //fprintf(stderr, "inside else statement\n");
 		SortedListElement_t *it = list->next; // don't want to start comparing to the head's key,
 											  // but the key of the actual first element in list
+        // CASE 1: before the first element
+        if ((compare_cur = strcmp(it->key, element->key)) > 0){
+            it = list;
+            goto insert;
+        }
+        
+        // CASE 2: between two elements or after last element
 		while (it->next != NULL) {
             //fprintf(stderr, "inside do while\n");
             //fprintf(stderr, "current key is %c\n", *(it->key));
-			int compare_cur = strcmp(it->key, element->key);
+            //fprintf(stderr, "element key is %c\n", *(element->key));
+			compare_cur = strcmp(it->key, element->key);
+            //fprintf(stderr, "compare_cur is %d\n", compare_cur);
             
-			int compare_next = strcmp(it->next->key, element->key);
+            //fprintf(stderr, "next key is %c\n", *(it->next->key));
+            //fprintf(stderr, "element key is %c\n", *(element->key));
+			compare_next = strcmp(it->next->key, element->key);
 			if ((compare_cur <= 0) && (compare_next >= 0)){
+                //fprintf(stderr, "breaking out of loop to insert\n");
 				break;
 			}
 			it = it->next;
+            
+            fprintf(stderr, "\n");
         }
-        
+            
+    insert:
         element->next = it->next;
         element->prev = it;
         it->next = element;
@@ -42,27 +57,32 @@ void SortedList_insert(SortedList_t *list, SortedListElement_t *element){
 }
 
 int SortedList_delete(SortedListElement_t *element){
+    fprintf(stderr, "inside DELETE function\n");
 	SortedListElement_t *p = element->prev;
 	SortedListElement_t *n = element->next;
 
 	// error checking for corrupted pointers
-	if (p->next != element && n->prev != element){
+    if (p->next != element && n != NULL && n->prev != element){
 		return 1;
 	}
-
+    
 	p->next = n;
-	n->prev = p;
+    if (n != NULL){
+        n->prev = p;
+    }
 	free(element);
 	return 0;
 }
 
 SortedListElement_t *SortedList_lookup(SortedList_t *list, const char *key){
 	SortedListElement_t *it = list->next;
+    int count = 1;
 	while (it != NULL){
 		if (strcmp(it->key, key) == 0){
-			return it;
+            return it;
 		}
 		it = it->next;
+        count++;
 	}
 	return NULL;
 }
@@ -89,23 +109,23 @@ int main(){
         SortedListElement_t *add = (SortedListElement_t *)malloc(sizeof(SortedListElement_t));
         switch (i) {
             case 0:
-                add->key = "1";
+                add->key = "5";
                 break;
                 
             case 1:
-                add->key = "3";
-                break;
-                
-            case 2:
-                add->key = "2";
-                break;
-                
-            case 3:
                 add->key = "4";
                 break;
                 
+            case 2:
+                add->key = "3";
+                break;
+                
+            case 3:
+                add->key = "2";
+                break;
+                
             case 4:
-                add->key = "5";
+                add->key = "1";
                 break;
                 
                 
@@ -120,16 +140,37 @@ int main(){
         }
         SortedList_insert(list, add);
     }
-    
     assert(SortedList_length(list) == 5);
+    fprintf(stderr, "Testing lookup and delete for key 1 and the resulting length and print\n");
     SortedListElement_t *removeThis = SortedList_lookup(list, "1");
     assert(SortedList_delete(removeThis) == 0);
     assert(SortedList_length(list) == 4);
     SortedListElement_t *it = list->next;
-    for (i = 0; i < 4; i++){ // check that 1 is correctly removed
-        //fprintf(stderr, "key %d ", i + 1);
-        //fprintf(stderr, "is %c\n", *(it->key));
+    i = 0;
+    while (it != NULL){ // check that 1 is correctly removed
+        fprintf(stderr, "key %d ", i + 1);
+        fprintf(stderr, "is %c\n", *(it->key));
         it = it->next;
+        i++;
     }
-
+    assert(SortedList_length(list) == 4);
+    
+    fprintf(stderr, "\n");
+    fprintf(stderr, "Testing lookup and delete for key 5 and the resulting length and print\n");
+    removeThis = SortedList_lookup(list, "5");
+    assert(SortedList_length(list) == 4);
+    assert(SortedList_delete(removeThis) == 0);
+    //assert(SortedList_length(list) == 3);
+    length = SortedList_length(list);
+    fprintf(stderr, "the length after deleting 5 is %d\n", length);
+    it = list->next;
+    i = 0;
+    fprintf(stderr, "BEFORE while loop\n");
+    while (it != NULL){ // check that 5 is correctly removed
+        fprintf(stderr, "key %d ", i + 1);
+        fprintf(stderr, "is %c\n", *(it->key));
+        it = it->next;
+        i++;
+    }
+    fprintf(stderr, "AFTER while loop\n");
 }
