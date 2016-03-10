@@ -1,0 +1,105 @@
+Lab 4
+CS111, Winter 2016
+
+Eric Chan
+504447283
+echan996@gmail.com
+
+Elise Yuen
+604418732
+ejyuen@att.net
+
+************************
+         PART 1
+************************
+
+QUESTIONS 1.1
+1) In our program, a parent thread will set up many child threads, each requiring a
+set up time x. Once the child is set up, it will run in time y. However, if the
+parent sets up the child in time x < y (the previous child thread’s run time), then 
+two threads will run concurrently and compete for the same resources, resulting in a
+race condition. The possibility of race conditions increases with greater numbers of
+threads.
+
+We must have at least two threads to have a race condition. Even then, two threads
+introduces the possibility of having a race condition, but does not guarantee an
+error in the result. Thus, we will look at situations with more threads so that we
+guarantee this result error. We used 10 threads as our benchmark because it failed
+often enough in the presence of possible race conditions. 
+
+The minimum number of iterations that we found to consistently result in a failure
+reflects an approximation of how long the Linux server we used took to set up a
+thread.
+
+2) A small number of iterations often represents a period of time less than the time
+it takes for the parent thread to set up a child. So, the chances of race
+conditions, and thus failure, is less because the two threads don’t intersect.
+An iteration value that sometimes results in error is a number that adds up to a
+time interval that is close to the thread set up time, making it more likely for
+errors, but not guaranteed.
+
+QUESTIONS 1.2
+1) The average cost per operation drops with increasing iterations because a lot of
+the total time is spent creating the threads. As we add more iterations, this adds
+very little to the overall time, so the overall time doesn’t change very much, but
+it is divided by a larger number with an increasing number of iterations. Thus, each
+operation becomes cheaper and cheaper because we divide the child thread set up time
+(plus the little time that each of the iterations add) amongst more operations.
+
+2) We can find the “correct” cost by increasing the number of operations until we 
+find the limit. This represents the “correct” cost because the set up time becomes negligible when divided amongst so many iterations. 
+
+3) When yield is enable, we have a much larger overall time, indicating that the
+operations are much slower when yield is on that when it is off. Yield means that
+the thread gives up the CPU in order to let another thread have its turn to run. So,
+we can see that this overall time difference is due to the time spent context
+switching between threads each time yield is called.
+
+4) We should not trust the resulting timings using yield to give us reliable or 
+correct results. Since so much of the program is spent doing context switches, we
+can’t use this value as a valid indicator of how long each operation actually takes.
+Context switching isn’t considered useful work, so we should not factor this into 
+our overall time when calculating the time for the actual operations in themselves.
+Thus, we can get best “correct” results regarding operations when yield is not used.
+
+
+QUESTIONS 1.3
+1) 
+
+2) 
+
+3) 
+
+
+************************
+         PART 2
+************************
+
+QUESTIONS 2.1
+1) 
+
+
+QUESTIONS 2.2
+1) 
+
+
+QUESTIONS 2.3
+1) 
+
+2) 
+
+
+************************
+         PART 3
+************************
+
+QUESTIONS 3.1
+1) 
+
+2) 
+
+3) 
+
+4) 
+
+5) 
