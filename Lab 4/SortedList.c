@@ -123,7 +123,7 @@ int main(){
         SortedList_insert(list, add);
     }
     assert(SortedList_length(list) == 5);
-    //fprintf(stderr, "Testing lookup and delete for key 1 and the resulting length and print\n");
+    //fprintf(stderr, "Testing when removing first element\n");
     SortedListElement_t *removeThis = SortedList_lookup(list, "1");
     assert(SortedList_delete(removeThis) == 0);
     assert(SortedList_length(list) == 4);
@@ -138,11 +138,29 @@ int main(){
     assert(SortedList_length(list) == 4);
     
     //fprintf(stderr, "\n");
-    //fprintf(stderr, "Testing lookup and delete for key 5 and the resulting length and print\n");
+    //fprintf(stderr, "Testing when removing last element\n");
     removeThis = SortedList_lookup(list, "5");
     assert(SortedList_length(list) == 4);
     assert(SortedList_delete(removeThis) == 0);
     assert(SortedList_length(list) == 3);
+    it = list->next;
+    i = 0;
+    while (it != NULL){ // check that 5 is correctly removed
+        //fprintf(stderr, "key %d ", i + 1);
+        //fprintf(stderr, "is %c\n", *(it->key));
+        it = it->next;
+        i++;
+    }
+    
+    removeThis = SortedList_lookup(list, "1");
+    assert(removeThis == NULL);
+    
+    //fprintf(stderr, "\n");
+    //fprintf(stderr, "Testing when removing middle element\n");
+    removeThis = SortedList_lookup(list, "3");
+    assert(SortedList_length(list) == 3);
+    assert(SortedList_delete(removeThis) == 0);
+    assert(SortedList_length(list) == 2);
     it = list->next;
     i = 0;
     while (it != NULL){ // check that 5 is correctly removed
