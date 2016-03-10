@@ -32,10 +32,15 @@ void* thread_action(void* arg){
 	}
 	else if(locker=='s'){
 		for (int i = 0; i < iterations; i++){
-			while (__sync_lock_test_and_set(&s_test_lock));
+			while (__sync_lock_test_and_set(&s_test_lock,1));
 			add(&counter, 1);
 			add(&counter, -1);
 			__sync_lock_release(&s_test_lock);
+		}
+	}
+	else if (locker == 'c'){
+		for (int i = 0; i < iterations; i++){
+			__sync_val_compare_and_swap(&counter, counter, counter + 1);
 		}
 	}
 	else if(locker=='\0'){
