@@ -1,0 +1,12 @@
+Lab 1
+Design Problem
+CS 111
+Winter 2016
+
+Eric Chan 504447283
+Elise Yuen 604418732
+
+For our design problem, we continued part of Lab 1c and compared our performances to ksh and tcsh. When
+attempting to run our tests, run test.sh first in order to create the proper files that are utilized in
+our ksh and tcsh testing.
+
