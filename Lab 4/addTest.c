@@ -40,18 +40,20 @@ void* thread_action(void* arg){
 	}
 	else if (locker == 'c'){
 		for (int i = 0; i < iterations; i++){
+			int old, sum;
 			do{
-				int old = counter;
+				old = counter;
 				if (opt_yield)
 					pthread_yield();
-				int sum = old + 1;
-			}while(__sync_val_compare_and_swap(&counter, old, sum)==*counter);
+				sum = old + 1;
+			}while(__sync_val_compare_and_swap(&counter, old, sum)==counter);
+
 			do{
-				int old = counter;
+				old = counter;
 				if (opt_yield)
 					pthread_yield();
-				int sum = old - 1;
-			} while (__sync_val_compare_and_swap(&counter, old, sum) == *counter);
+				sum = old - 1;
+			} while (__sync_val_compare_and_swap(&counter, old, sum) == counter);
 		}
 	}
 	else if(locker=='\0'){
