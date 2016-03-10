@@ -11,19 +11,18 @@
 #include "SortedList.c"
 char locker = '\0';
 long long counter = 0;
-int opt_yield=0;
+int i_yield=0, d_yield=0, s_yield=0;
 int s_test_lock = 0;
 pthread_mutex_t m_test_mutex;
-
-void add(long long* pointer, long long value) {
-    long long sum = *pointer + value;
-    if (opt_yield)
-        pthread_yield();
-    *pointer = sum;
-}
+SortedList_t *list;
+typedef struct s_thread_info{
+	int iterations;
+	int thread_num;
+	SortedListElement_t*** key_array;
+}thread_info;
 void* thread_action(void* arg){
-    int iterations = *(int*)arg;
-    if (locker == 'm'){
+    thread_info t_data= *(thread_info*)arg;
+   /* if (locker == 'm'){
         for (int i = 0; i < iterations; i++){
             pthread_mutex_lock(&m_test_mutex);
             add(&counter, 1);
@@ -54,13 +53,10 @@ void* thread_action(void* arg){
                 int sum = old - 1;
             } while (__sync_val_compare_and_swap(&counter, old, sum) == *counter);
         }
-    }
-    else if(locker=='\0'){
-        for (int i = 0; i < iterations; i++){
-            add(&counter, 1);
-            add(&counter, -1);
-        }
-    }
+    }*/
+	for (int i = 0; i < t_data.iterations; i++){
+		SortedList_insert(list, t_data->key_array[t_data[thread_num]][i]);
+	}
 }
 
 
@@ -69,8 +65,8 @@ static struct option long_options[] = {
     { "threads", required_argument, 0, 'a' },
     { "iter", required_argument, 0, 'b' },
     { "iterations", required_argument, 0, 'b' },
-    { "yield", optional_argument, 0, 'c' },
-    { "sync", required_argument, 0, 'd' },
+    { "yield", required_argument, 0, 'c' },
+   // { "sync", required_argument, 0, 'd' },
     {0,0,0,0}
 };
 
@@ -97,7 +93,18 @@ int main(int argc, char** argv){
                 }
                 break;
             case 'c':
-                // set appropriate yield values
+				for (int i = 0; optarg[i] != '\0'; i++){
+					if (optarg[i] == 'i')
+						i_yield = 1;
+					else if (optarg[i] == 'd')
+						d_yield = 1;
+					else if (optarg[i] == 's')
+						s_yield = 1;
+					else{
+						fprintf(stderr, "Error: Arguments to --yield must be a member of [ids]\n");
+						break;
+					}
+				}
                 break;
             case 'd':
                 locker = optarg[0];
@@ -124,10 +131,27 @@ int main(int argc, char** argv){
         fprintf(stderr, "Error: memory not allocated\n");
         exit(1);
     }
+
+	thread_info * thread_data = malloc(threads*sizeof(thread_info));
+	
+	if (thread_data == NULL){
+		fprintf(stderr, "Error: memory not allocated\n");
+		exit(1);
+	}
+	
+	for (int i = 0; i < thread; i++){
+		thread_data[i].iterations = iterations;
+		thread_data[i].thread_num = i;
+		thread_data[i].key_array = &arr;
+	}
+
     clock_gettime(CLOCK_MONOTONIC, &timer);
     time_init = timer.tv_sec * 1000000000 + timer.tv_nsec;
-    for (int a = 0, create_check = 0; a < threads; a++){
-        create_check = pthread_create(tids + a, 0, thread_action, &iterations);
+	
+	
+    
+	for (int a = 0, create_check = 0; a < threads; a++){
+        create_check = pthread_create(tids + a, 0, thread_action, &thread_data[a]);
         if (create_check){
             fprintf(stderr, "Error: unable to create thread\n");
         }
