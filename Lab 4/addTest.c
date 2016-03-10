@@ -9,8 +9,11 @@
 #include <sys/resource.h>
 
 long long counter = 0;
+int opt_yield=0;
 void add(long long* pointer, long long value) {
 	long long sum = *pointer + value;
+	if (opt_yield)
+		pthread_yield();
 	*pointer = sum;
 }
 void* thread_action(void* arg){
@@ -27,6 +30,7 @@ static struct option long_options[] = {
 		{ "threads", required_argument, 0, 'a' },
 		{ "iter", required_argument, 0, 'b' },
 		{ "iterations", required_argument, 0, 'b' },
+		{ "yield", required_argument, 0, 'c' },
 		{0,0,0,0}
 };
 
@@ -52,7 +56,10 @@ int main(int argc, char** argv){
 				fprintf(stderr, "Argument must be positive integer\n");
 			}
 			break;
-
+		case 'c':
+			if (atoi(optarg) == 1)
+				opt_yield = 1;
+			break;
 		default:
 			fprintf(stderr, "Error: Invalid argument\n");
 			break;
