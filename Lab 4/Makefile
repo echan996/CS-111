@@ -1,5 +1,5 @@
-all: addTest
+all: addtest
 addTest:
-	gcc -o $@ addTest.c -std=c11 -lrt
+	gcc -o $@ addtest.c -std=c11 -lrt
 clean:
-	rm addTest
+	rm addtest

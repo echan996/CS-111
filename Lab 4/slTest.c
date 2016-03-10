@@ -68,7 +68,7 @@ static struct option long_options[] = {
     { "threads", required_argument, 0, 'a' },
     { "iter", required_argument, 0, 'b' },
     { "iterations", required_argument, 0, 'b' },
-    { "yield", required_argument, 0, 'c' },
+    { "yield", optional_argument, 0, 'c' },
     { "sync", required_argument, 0, 'd' },
     {0,0,0,0}
 };
@@ -96,8 +96,7 @@ int main(int argc, char** argv){
                 }
                 break;
             case 'c':
-                if (atoi(optarg) == 1)
-                    opt_yield = 1;
+                // set appropriate yield values
                 break;
             case 'd':
                 locker = optarg[0];
@@ -108,6 +107,8 @@ int main(int argc, char** argv){
                 break;
         }
     }
+    
+    
     pthread_t *tids = malloc(threads*sizeof(pthread_t));
     if (tids == NULL){
         fprintf(stderr, "Error: memory not allocated\n");
