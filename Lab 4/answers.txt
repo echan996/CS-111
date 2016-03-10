@@ -70,9 +70,14 @@ as noticable. There aren't many computations for the lock for a low number of th
 won't take very long to get the lock and the difference won't be very noticable. The price of
 maintaining a lock is cheap; the main cost comes from threads 
 
-2) 
+2) The protected operations will slow down because it only allows for one thread at a time
+to access the protected variable. Because of this, each thread will have access to the processors
+for a shorter amount of time and as a result, will have higher on average times for each operation.
 
-3) 
+3) Spin locks are more expensive because when the thread isn't running, it will be busy-waiting 
+rather than being blocked. Since in a large number of threads, all but one will be busy-waiting, thus
+a large section of time will be spent on waiting on access to a protected variable in this case. 
+
 
 
 ************************

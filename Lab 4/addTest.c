@@ -83,7 +83,7 @@ int main(int argc, char** argv){
 	threads = iterations = 1;
 	int i = 0;
 	long operations;
-	double per_op;
+	long per_op;
 	long long time_init, time_finish;
 	char option;
 	while ((option = (char)getopt_long(argc, argv, "", long_options, &i)) != -1){
@@ -139,6 +139,6 @@ int main(int argc, char** argv){
 	}
 	fprintf(stdout, "elapsed time: %lld\n", time_finish);
 	per_op = time_finish / operations;
-	fprintf(stdout, "per operation: %f\n", per_op);
+	fprintf(stdout, "per operation: %ld\n", per_op);
 	return 0;
 }
