@@ -144,7 +144,7 @@ int main(int argc, char** argv){
                 break;
         }
     }
-    SortedListElement_t **arr = (SortedListElement_t **)malloc(threads*iterations*sizeof(SortedListElement_t *));
+    SortedListElement_t ***arr = (SortedListElement_t ***)malloc(threads*iterations*sizeof(SortedListElement_t *));
     
     
     // initialize empty list
@@ -154,24 +154,19 @@ int main(int argc, char** argv){
     list->key = NULL;
     
     static const char alphanum[] =     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    for (int t = 0; t < threads*iterations; t++){
-        int len = (rand() % 49) + 1; // random length from 1 to 50
-        char *s = (char *)malloc(len);
-        for (int j = 0; j < len; ++j) {
-            s[j] = alphanum[rand() % (sizeof(alphanum) - 1)];
-        }
-        s[len] = 0;
-        SortedListElement_t *add = (SortedListElement_t *)malloc(sizeof(SortedListElement_t));
-        add->key = s;
-        arr[t] = (SortedListElement_t *)malloc(sizeof(SortedListElement_t));
-        arr[t] = add;
-        fprintf(stderr, "inserting key ");
-        for (int e = 0; e < len; e++){
-            fprintf(stderr, "%c", s[e]);
-        }
-        fprintf(stderr, "\n");
-    }
-    
+	for (int t = 0; t < threads; t++){
+		for (int i = 0; i < iterations; i++){
+			int len = (rand() % 49) + 1; // random length from 1 to 50
+			char *s = (char *)malloc(len);
+			for (int j = 0; j < len; ++j) {
+				s[j] = alphanum[rand() % (52)];
+			}
+			s[len] = '\0';
+			SortedListElement_t *add = (SortedListElement_t *)malloc(sizeof(SortedListElement_t));
+			add->key = s;
+			arr[t][i] = add;
+		}
+	}
     pthread_t *tids = malloc(threads*sizeof(pthread_t));
     if (tids == NULL){
         fprintf(stderr, "Error: memory not allocated\n");
