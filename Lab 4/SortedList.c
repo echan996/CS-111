@@ -36,12 +36,17 @@ void SortedList_insert(SortedList_t *list, SortedListElement_t *element){
         element->next = it->next;
         element->prev = it;
         it->next = element;
-        element->next->prev = element;
+        if (element->next != NULL){
+            element->next->prev = element;
+        }
 	}
 }
 
 int SortedList_delete(SortedListElement_t *element){
-	SortedListElement_t *p = element->prev;
+	if (element == NULL)
+        return 1;
+    
+    SortedListElement_t *p = element->prev;
 	SortedListElement_t *n = element->next;
     
     if (p->next != element && n != NULL && n->prev != element){
@@ -91,23 +96,23 @@ int main(){
         SortedListElement_t *add = (SortedListElement_t *)malloc(sizeof(SortedListElement_t));
         switch (i) {
             case 0:
-                add->key = "5";
-                break;
-                
-            case 1:
                 add->key = "4";
                 break;
                 
-            case 2:
-                add->key = "3";
+            case 1:
+                add->key = "1";
                 break;
                 
-            case 3:
+            case 2:
                 add->key = "2";
                 break;
                 
+            case 3:
+                add->key = "3";
+                break;
+                
             case 4:
-                add->key = "1";
+                add->key = "5";
                 break;
                 
                 
@@ -123,11 +128,20 @@ int main(){
         SortedList_insert(list, add);
     }
     assert(SortedList_length(list) == 5);
-    //fprintf(stderr, "Testing when removing first element\n");
-    SortedListElement_t *removeThis = SortedList_lookup(list, "1");
-    assert(SortedList_delete(removeThis) == 0);
-    assert(SortedList_length(list) == 4);
     SortedListElement_t *it = list->next;
+    i = 0;
+    while (it != NULL){ // check the order of insertion
+        //fprintf(stderr, "key %d ", i + 1);
+        //fprintf(stderr, "is %c\n", *(it->key));
+        it = it->next;
+        i++;
+    }
+    
+    //fprintf(stderr, "Testing when removing first element\n");
+    /*SortedListElement_t *removeThis = SortedList_lookup(list, "1");
+    assert(SortedList_delete(removeThis) != 0);
+    assert(SortedList_length(list) == 4);
+    it = list->next;
     i = 0;
     while (it != NULL){ // check that 1 is correctly removed
         //fprintf(stderr, "key %d ", i + 1);
@@ -168,5 +182,28 @@ int main(){
         //fprintf(stderr, "is %c\n", *(it->key));
         it = it->next;
         i++;
+    }
+     */
+    
+    static const char alphanum[] =     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    
+    SortedList_t *newlist = (SortedList_t *)malloc(sizeof(SortedList_t));
+    list->next = NULL;
+    list->prev = NULL;
+    list->key = NULL;
+    for (int e = 0; e < 5; e++){
+        int len = (rand() % 49) + 1; // random length from 1 to 50
+        char *s = (char *)malloc(len);
+        for (int j = 0; j < len; ++j) {
+            s[j] = alphanum[rand() % (sizeof(alphanum) - 1)];
+        }
+        s[len] = 0;
+        SortedListElement_t *add = (SortedListElement_t *)malloc(sizeof(SortedListElement_t));
+        if (add == NULL){
+            fprintf(stderr, "Error: memory not allocated\n");
+            exit(1);
+        }
+        add->key = s;
+        SortedList_insert(newlist, add);
     }
 }
