@@ -5,9 +5,9 @@
 #include <assert.h>
 
 void SortedList_insert(SortedList_t *list, SortedListElement_t *element){
-    if (opt_yield & INSERT_YIELD){
+    /*if (opt_yield & INSERT_YIELD){
         pthread_yield();
-    }
+    }*/
     // list is empty --> next = NULL
     int length, compare_cur, compare_next;
 	if (list->next == NULL){
@@ -46,9 +46,9 @@ void SortedList_insert(SortedList_t *list, SortedListElement_t *element){
 }
 
 int SortedList_delete(SortedListElement_t *element){
-    if (opt_yield & DELETE_YIELD){
+    /*if (opt_yield & DELETE_YIELD){
         pthread_yield();
-    }
+    }*/
 	if (element == NULL)
         return 1;
     
@@ -68,9 +68,9 @@ int SortedList_delete(SortedListElement_t *element){
 }
 
 SortedListElement_t *SortedList_lookup(SortedList_t *list, const char *key){
-    if (opt_yield & SEARCH_YIELD){
+    /*if (opt_yield & SEARCH_YIELD){
         pthread_yield();
-    }
+    }*/
 	SortedListElement_t *it = list->next;
     int count = 1;
 	while (it != NULL){
@@ -84,9 +84,9 @@ SortedListElement_t *SortedList_lookup(SortedList_t *list, const char *key){
 }
 
 int SortedList_length(SortedList_t *list){
-    if (opt_yield & SEARCH_YIELD){
+    /*if (opt_yield & SEARCH_YIELD){
         pthread_yield();
-    }
+    }*/
 	SortedListElement_t *it = list;
 	int counter = -1;
 	while (it != NULL){
@@ -96,7 +96,7 @@ int SortedList_length(SortedList_t *list){
 	return counter;
 }
 
-/*int main(){
+int main(){
     SortedList_t *list = (SortedList_t *)malloc(sizeof(SortedList_t));
     list->next = NULL;
     list->prev = NULL;
@@ -195,7 +195,7 @@ int SortedList_length(SortedList_t *list){
         it = it->next;
         i++;
     }
-     // add another end comment section here
+     */
     
     static const char alphanum[] =     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     
@@ -203,7 +203,7 @@ int SortedList_length(SortedList_t *list){
     list->next = NULL;
     list->prev = NULL;
     list->key = NULL;
-    for (int e = 0; e < 5; e++){
+    for (int e = 0; e < 1000; e++){
         int len = (rand() % 49) + 1; // random length from 1 to 50
         char *s = (char *)malloc(len);
         for (int j = 0; j < len; ++j) {
@@ -218,4 +218,4 @@ int SortedList_length(SortedList_t *list){
         add->key = s;
         SortedList_insert(newlist, add);
     }
-}*/
+}

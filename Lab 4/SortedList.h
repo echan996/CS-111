@@ -97,23 +97,32 @@ void SortedList_insert(SortedList_t *list, SortedListElement_t *element){
     if (opt_yield & INSERT_YIELD){
         pthread_yield();
     }
+    fprintf(stderr, "checkpoint 1\n");
     // list is empty --> next = NULL
     int length, compare_cur, compare_next;
     if (list->next == NULL){
+        fprintf(stderr, "checkpoint 2\n");
         list->next = element;
         element->prev = list;
         element->next = NULL;
+        fprintf(stderr, "just inserted %c\n", *(element->key));
     }
     // list is filled --> iterate through the list to find where to place it and connect accordingly
     else {
+        fprintf(stderr, "checkpoint 3\n");
         SortedListElement_t *it = list->next; // don't want to start comparing to the head's key,
         // but the key of the actual first element in list
         // CASE 1: before the first element
-        if ((compare_cur = strcmp(it->key, element->key)) > 0){
+        fprintf(stderr, "checkpoint 4\n");
+        fprintf(stderr, "it->key is %c\n", *(it->key));
+        fprintf(stderr, "element->key is %c\n", *(element->key));
+        compare_cur = strcmp(it->key, element->key);
+        fprintf(stderr, "checkpoint 5\n");
+        if (compare_cur > 0){
             it = list;
             goto insert;
         }
-        
+        fprintf(stderr, "checkpoint 6\n");
         // CASE 2: between two elements or after last element
         while (it->next != NULL) {
             compare_cur = strcmp(it->key, element->key);
@@ -123,7 +132,7 @@ void SortedList_insert(SortedList_t *list, SortedListElement_t *element){
             }
             it = it->next;
         }
-        
+        fprintf(stderr, "checkpoint 7\n");
     insert:
         element->next = it->next;
         element->prev = it;

@@ -60,17 +60,29 @@ void* thread_action(void* arg){
     }*/
 	
     int startIndex = t_data.thread_num;
+    fprintf(stderr, "the start index is %d\n", startIndex);
     int endIndex = (t_data.thread_num + 1) * t_data.iterations;
+    fprintf(stderr, "the end index is %d\n", endIndex);
+    for (int e = 0; e < 10; e++){
+        SortedListElement_t *insertMe = t_data.key_array[2];
+        int i = 0;
+        while (insertMe->key[i] != 0){
+            fprintf(stderr, "%c", insertMe->key[i]);
+            i++;
+        }
+        fprintf(stderr, "\n");
+    }
 	for (int i = startIndex; i < endIndex; i++){
-        fprintf(stderr, "inserting\n");
-        SortedList_insert(list, (t_data.key_array)[i]);
+        SortedListElement_t *insertMe = t_data.key_array[i];
+        fprintf(stderr, "inserting key %c\n", insertMe->key);
+        SortedList_insert(list, insertMe);
 	}
     fprintf(stderr, "length\n");
     SortedList_length(list);
     for (int i = startIndex; i < endIndex; i++){
         // lookup and delete
         fprintf(stderr, "searching\n");
-		SortedListElement_t *deleteThis = SortedList_lookup(list, (t_data.key_array)[i]);
+		SortedListElement_t *deleteThis = SortedList_lookup(list, t_data.key_array[i]);
         fprintf(stderr, "deleting\n");
         SortedList_delete(deleteThis);
     }
@@ -143,17 +155,21 @@ int main(int argc, char** argv){
     
     static const char alphanum[] =     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     for (int t = 0; t < threads*iterations; t++){
-            int len = (rand() % 49) + 1; // random length from 1 to 50
-            char *s = (char *)malloc(len);
-            for (int j = 0; j < len; ++j) {
-                s[j] = alphanum[rand() % (sizeof(alphanum) - 1)];
-            }
-            s[len] = 0;
-            SortedListElement_t *add = (SortedListElement_t *)malloc(sizeof(SortedListElement_t));
-            add->key = s;
-            arr[t] = (SortedListElement_t *)malloc(sizeof(SortedListElement_t));
-            arr[t] = add;
-
+        int len = (rand() % 49) + 1; // random length from 1 to 50
+        char *s = (char *)malloc(len);
+        for (int j = 0; j < len; ++j) {
+            s[j] = alphanum[rand() % (sizeof(alphanum) - 1)];
+        }
+        s[len] = 0;
+        SortedListElement_t *add = (SortedListElement_t *)malloc(sizeof(SortedListElement_t));
+        add->key = s;
+        arr[t] = (SortedListElement_t *)malloc(sizeof(SortedListElement_t));
+        arr[t] = add;
+        fprintf(stderr, "inserting key ");
+        for (int e = 0; e < len; e++){
+            fprintf(stderr, "%c", s[e]);
+        }
+        fprintf(stderr, "\n");
     }
     
     pthread_t *tids = malloc(threads*sizeof(pthread_t));
