@@ -59,20 +59,10 @@ void* thread_action(void* arg){
         }
     }*/
 	
-    int startIndex = t_data.thread_num;
-    fprintf(stderr, "the start index is %d\n", startIndex);
-    int endIndex = (t_data.thread_num + 1) * t_data.iterations;
-    fprintf(stderr, "the end index is %d\n", endIndex);
-    for (int e = 0; e < 10; e++){
-        SortedListElement_t *insertMe = t_data.key_array[2];
-        int i = 0;
-        while (insertMe->key[i] != 0){
-            fprintf(stderr, "%c", insertMe->key[i]);
-            i++;
-        }
-        fprintf(stderr, "\n");
-    }
-	for (int i = startIndex; i < endIndex; i++){
+	for (int i = 0; i < t_data.iterations; i++){
+		SortedList_insert(list, *(t_data.key_array)[t_data.thread_num][i]);
+	}
+	/*for (int i = startIndex; i < endIndex; i++){
         SortedListElement_t *insertMe = t_data.key_array[i];
         fprintf(stderr, "inserting key %c\n", insertMe->key);
         SortedList_insert(list, insertMe);
@@ -85,7 +75,7 @@ void* thread_action(void* arg){
 		SortedListElement_t *deleteThis = SortedList_lookup(list, t_data.key_array[i]);
         fprintf(stderr, "deleting\n");
         SortedList_delete(deleteThis);
-    }
+    }*/
 }
 
 
