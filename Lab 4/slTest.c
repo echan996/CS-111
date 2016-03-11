@@ -12,7 +12,6 @@
 
 char locker = '\0';
 long long counter = 0;
-int i_yield=0, d_yield=0, s_yield=0;
 int s_test_lock = 0;
 pthread_mutex_t m_test_mutex;
 SortedList_t *list;
@@ -26,70 +25,32 @@ typedef struct s_thread_info{
 
 void* thread_action(void* arg){
     thread_info t_data= *(thread_info*)arg;
-   /* if (locker == 'm'){
-        for (int i = 0; i < iterations; i++){
-            pthread_mutex_lock(&m_test_mutex);
-            add(&counter, 1);
-            add(&counter, -1);
-            pthread_mutex_unlock(&m_test_mutex);
-        }
-    }
-    else if(locker=='s'){
-        for (int i = 0; i < iterations; i++){
-            while (__sync_lock_test_and_set(&s_test_lock,1));
-            add(&counter, 1);
-            add(&counter, -1);
-            __sync_lock_release(&s_test_lock);
-        }
-    }
-    else if (locker == 'c'){
-        for (int i = 0; i < iterations; i++){
-            do{
-                int old = counter;
-                if (opt_yield)
-                    pthread_yield();
-                int sum = old + 1
-				}while(__sync_val_compare_and_swap(&counter, old, sum)==*counter);
-            do{
-                int old = counter;
-                if (opt_yield)
-                    pthread_yield();
-                int sum = old - 1;
-            } while (__sync_val_compare_and_swap(&counter, old, sum) == *counter);
-        }
-    }*/
-    // printf("here!");
-    //fprintf(stdout,"%d\n", t_data.iterations);
-    //fprintf(stdout,"%s\n", (t_data.key_array)[t_data.thread_num][t_data.iterations-1].key);
-    for (int i = 0; i < t_data.iterations; i++){
-		SortedList_insert(list, &t_data.key_array[t_data.thread_num][i]);
-    }
-    int i= SortedList_length(list);
-    fprintf(stdout, "%d\n",i);
-    for(SortedListElement_t* iteration = list->next;iteration!=NULL;iteration=iteration->next)
-		fprintf(stdout,"%s\n",iteration->key);
-    for(int i=0;i<t_data.iterations;i++){
-		fprintf(stdout,"hello!\n");
-		SortedList_delete(SortedList_lookup(list,t_data.key_array[t_data.thread_num][i].key));
-      
-    }
-    
-	//SortedListElement_t checking_this=*SortedList_lookup(list,(t_data.key_array[t_data.thread_num][0]->key));
-	//printf("%s\n",checking_this.key);
-	/*for (int i = startIndex; i < endIndex; i++){
-        SortedListElement_t *insertMe = t_data.key_array[i];
-        fprintf(stderr, "inserting key %c\n", insertMe->key);
-        SortedList_insert(list, insertMe);
+	if (locker == 'm'){
+		for (int i = 0; i < t_data.iterations; i++){
+			pthread_mutex_lock(&m_test_mutex);
+			SortedList_insert(list, &t_data.key_array[t_data.thread_num][i]); //+1
+			pthread_mutex_unlock(&m_test_mutex);
+		}
+		int i = SortedList_length(list);
+		for (int i = 0; i < t_data.iterations; i++){
+			pthread_mutex_lock(&m_test_mutex);
+			SortedList_delete(SortedList_lookup(list, t_data.key_array[t_data.thread_num][i].key)); //-1
+			pthread_mutex_lock(&m_test_mutex);
+		}
 	}
-    fprintf(stderr, "length\n");
-    SortedList_length(list);
-    for (int i = startIndex; i < endIndex; i++){
-        // lookup and delete
-        fprintf(stderr, "searching\n");
-		SortedListElement_t *deleteThis = SortedList_lookup(list, t_data.key_array[i]);
-        fprintf(stderr, "deleting\n");
-        SortedList_delete(deleteThis);
-    }*/
+	else if(locker == 's'){
+		for (int i = 0; i < t_data.iterations; i++){
+			while (__sync_lock_test_and_set(&s_test_lock, 1));
+			SortedList_insert(list, &t_data.key_array[t_data.thread_num][i]); //+1
+			__sync_lock_release(&s_test_lock);
+		}
+		int i = SortedList_length(list);
+		for (int i = 0; i < t_data.iterations; i++){
+			while (__sync_lock_test_and_set(&s_test_lock, 1));
+			SortedList_delete(SortedList_lookup(list, t_data.key_array[t_data.thread_num][i].key)); //-1
+			__sync_lock_release(&s_test_lock);
+		}
+	}
 }
 
 
@@ -119,11 +80,13 @@ int main(int argc, char** argv){
             case 'a':
                 if ((threads = atoi(optarg)) == 0){
                     fprintf(stderr, "Argument must be positive integer\n");
+					exit(1);
                 }
                 break;
             case 'b':
                 if ((iterations = atoi(optarg)) == 0){
                     fprintf(stderr, "Argument must be positive integer\n");
+					exit(1);
                 }
                 break;
             case 'c':
@@ -136,16 +99,21 @@ int main(int argc, char** argv){
 						opt_yield = opt_yield | SEARCH_YIELD;
 					else{
 						fprintf(stderr, "Error: Arguments to --yield must be a member of [ids]\n");
+						exit(1);
 						break;
 					}
 				}
                 break;
             case 'd':
                 locker = optarg[0];
+				if (locker != 'm'&& locker != 's'){
+					fprintf(stderr, "Error: invalid synchronization option\n");
+					exit(1);
+				}
                 break;
-                
             default:
                 fprintf(stderr, "Error: Invalid argument\n");
+				exit(1);
                 break;
         }
     }
@@ -208,18 +176,27 @@ int main(int argc, char** argv){
     for (int a = 0; a < threads; a++){
         pthread_join(tids[a], 0);
     }
-    /*
+    
     
     clock_gettime(CLOCK_MONOTONIC, &timer);
-    free(tids);
+    
+	free(tids);
+	
+	for (int a = 0; i < threads; a++){
+		free(arr[a]);
+	}
+
     time_finish = timer.tv_sec * 1000000000 + timer.tv_nsec - time_init;
-    operations = threads* iterations * 2;
-    fprintf(stdout, "%d threads x %d iterations x (add + subtract) = %ld operations\n", threads, iterations, operations);
+    operations = threads* iterations * 2*iterations/2;
+    fprintf(stdout, "%d threads x %d iterations x (ins + lookup/delete) x iterations/2 average len = %ld operations\n", threads, iterations, operations);
     if (counter != 0){
         fprintf(stderr, "Error: final count = %lld\n", counter);
     }
     fprintf(stdout, "elapsed time: %lld\n", time_finish);
     per_op = time_finish / operations;
     fprintf(stdout, "per operation: %f\n", per_op);
-	*/return 0;
+	
+	if (SortedList_length(list))
+		fprintf(stdout, "Error: %d list length\n", SortedList_length(list));
+	return 0;
 }
