@@ -28,29 +28,45 @@ void* thread_action(void* arg){
 	if (locker == 'm'){
 		for (int i = 0; i < t_data.iterations; i++){
 			pthread_mutex_lock(&m_test_mutex);
-			SortedList_insert(list, &t_data.key_array[t_data.thread_num][i]); //+1
+			SortedList_insert(list, &t_data.key_array[t_data.thread_num][i]);
 			pthread_mutex_unlock(&m_test_mutex);
 		}
+
 		int i = SortedList_length(list);
+
 		for (int i = 0; i < t_data.iterations; i++){
 			pthread_mutex_lock(&m_test_mutex);
-			SortedList_delete(SortedList_lookup(list, t_data.key_array[t_data.thread_num][i].key)); //-1
+			SortedList_delete(SortedList_lookup(list, t_data.key_array[t_data.thread_num][i].key));
 			pthread_mutex_lock(&m_test_mutex);
 		}
 	}
-	else if(locker == 's'){
+	else if (locker == 's'){
 		for (int i = 0; i < t_data.iterations; i++){
 			while (__sync_lock_test_and_set(&s_test_lock, 1));
-			SortedList_insert(list, &t_data.key_array[t_data.thread_num][i]); //+1
+			SortedList_insert(list, &t_data.key_array[t_data.thread_num][i]);
 			__sync_lock_release(&s_test_lock);
 		}
+
 		int i = SortedList_length(list);
+
 		for (int i = 0; i < t_data.iterations; i++){
 			while (__sync_lock_test_and_set(&s_test_lock, 1));
-			SortedList_delete(SortedList_lookup(list, t_data.key_array[t_data.thread_num][i].key)); //-1
+			SortedList_delete(SortedList_lookup(list, t_data.key_array[t_data.thread_num][i].key));
 			__sync_lock_release(&s_test_lock);
 		}
 	}
+	else{
+		for (int i = 0; i < t_data.iterations; i++){
+			SortedList_insert(list, &t_data.key_array[t_data.thread_num][i]);
+		}
+
+		int i = SortedList_length(list);
+
+		for (int i = 0; i < t_data.iterations; i++){
+			SortedList_delete(SortedList_lookup(list, t_data.key_array[t_data.thread_num][i].key));
+		}
+	}
+
 }
 
 
@@ -60,7 +76,7 @@ static struct option long_options[] = {
     { "iter", required_argument, 0, 'b' },
     { "iterations", required_argument, 0, 'b' },
     { "yield", required_argument, 0, 'c' },
-   // { "sync", required_argument, 0, 'd' },
+    { "sync", required_argument, 0, 'd' },
     {0,0,0,0}
 };
 
@@ -80,13 +96,11 @@ int main(int argc, char** argv){
             case 'a':
                 if ((threads = atoi(optarg)) == 0){
                     fprintf(stderr, "Argument must be positive integer\n");
-					exit(1);
                 }
                 break;
             case 'b':
                 if ((iterations = atoi(optarg)) == 0){
                     fprintf(stderr, "Argument must be positive integer\n");
-					exit(1);
                 }
                 break;
             case 'c':
@@ -99,21 +113,20 @@ int main(int argc, char** argv){
 						opt_yield = opt_yield | SEARCH_YIELD;
 					else{
 						fprintf(stderr, "Error: Arguments to --yield must be a member of [ids]\n");
-						exit(1);
 						break;
 					}
 				}
                 break;
             case 'd':
                 locker = optarg[0];
-				if (locker != 'm'&& locker != 's'){
-					fprintf(stderr, "Error: invalid synchronization option\n");
+				if (locker != 'm' && locker != 's'){
+					fprintf(stderr, "Error: invalid sync option\n");
 					exit(1);
 				}
                 break;
+                
             default:
                 fprintf(stderr, "Error: Invalid argument\n");
-				exit(1);
                 break;
         }
     }
@@ -127,7 +140,7 @@ int main(int argc, char** argv){
     list->next = NULL;
     list->prev = NULL;
     list->key = NULL;
-    
+    //printf("here!");
     static const char alphanum[] =     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 	for (int t = 0; t < threads; t++){
 		for (int i = 0; i < iterations; i++){
@@ -140,7 +153,7 @@ int main(int argc, char** argv){
 			arr[t][i].next = NULL;
 			arr[t][i].prev = NULL;
 			arr[t][i].key = s;
-			
+			//fprintf(stdout,"%s\n",arr[t][i].key);
 		}
    	}
 	//fprintf(stdout,"here!");
@@ -166,7 +179,7 @@ int main(int argc, char** argv){
 	
     clock_gettime(CLOCK_MONOTONIC, &timer);
     time_init = timer.tv_sec * 1000000000 + timer.tv_nsec;
-
+    //    fprintf(stdout,"here!");
 	for (int a = 0, create_check = 0; a < threads; a++){
         create_check = pthread_create(tids + a, 0, thread_action, &thread_data[a]);
         if (create_check){
@@ -176,27 +189,20 @@ int main(int argc, char** argv){
     for (int a = 0; a < threads; a++){
         pthread_join(tids[a], 0);
     }
-    
+    if(SortedList_length(list))
+      fprintf(stdout,"Error: %d length", SortedList_length(list));
+     /*
     
     clock_gettime(CLOCK_MONOTONIC, &timer);
-    
-	free(tids);
-	
-	for (int a = 0; i < threads; a++){
-		free(arr[a]);
-	}
-
+    free(tids);
     time_finish = timer.tv_sec * 1000000000 + timer.tv_nsec - time_init;
-    operations = threads* iterations * 2*iterations/2;
-    fprintf(stdout, "%d threads x %d iterations x (ins + lookup/delete) x iterations/2 average len = %ld operations\n", threads, iterations, operations);
+    operations = threads* iterations * 2;
+    fprintf(stdout, "%d threads x %d iterations x (add + subtract) = %ld operations\n", threads, iterations, operations);
     if (counter != 0){
         fprintf(stderr, "Error: final count = %lld\n", counter);
     }
     fprintf(stdout, "elapsed time: %lld\n", time_finish);
     per_op = time_finish / operations;
     fprintf(stdout, "per operation: %f\n", per_op);
-	
-	if (SortedList_length(list))
-		fprintf(stdout, "Error: %d list length\n", SortedList_length(list));
-	return 0;
+	*/return 0;
 }
