@@ -103,12 +103,28 @@ QUESTIONS 2.3
 ************************
 
 QUESTIONS 3.1
-1) 
+1) The mutex must be held otherwise a thread may change the shared data between the time the condtion
+is checked and the time the thread begins to wait. Since pthread_cond_wait must be used with a
+conditional check for proper usage, this conditional may be subject to a race condition if the thread
+calling pthread_cond_wait does not have the mutex.
 
-2) 
+2) The waiting thread MUST release the mutex if it is blocked because otherwise, the program will
+hang, as the queue of threads waiting on this mutex will never get it, since it is being held by
+a blocked thread that is waiting for its turn to be woken up and given the mutex it already
+holds. It makes sense that the thread should release the mutex because it is essentially saying
+"I don't need this lock, come back to me when my condition is valid so I can do my work."
 
-3) 
+3) The point of pthread_cond_wait is to suspend synchronous execution until a certain condition is met.
+As a result, it must restore the state of the thread to its condition BEFORE pthread_cond_wait is called.
+If the mutex is not reacquired, we will have the risk of race conditions because shared variables will be
+able to be accessed by other threads.
 
-4) 
+4) The manner in which pthread_cond_wait is normally used is shown as below:
+while ( cond is false ) {
+        pthread_cond_wait( &cond, &mutex );
+}
+If the mutex is released right before the call to pthread_cond_wait, another thread may modify cond, making
+it true. In this case, we not want to make the thread wait, 	as its condition is satisfied. As a result, the
+release of mutex must be done within the pthread_cond_wait call.
 
 5) 
