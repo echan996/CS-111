@@ -57,13 +57,14 @@ void* thread_action(void* arg){
             } while (__sync_val_compare_and_swap(&counter, old, sum) == *counter);
         }
     }*/
+	
 	for (int i = 0; i < t_data.iterations; i++){
-        SortedList_insert(list, t_data->key_array[t_data[t_data->thread_num]][i]);
+        SortedList_insert(list, *(t_data.key_array)[t_data.thread_num][i]);
 	}
     SortedList_length(list);
     for (int i = 0; i < t_data.iterations; i++){
         // lookup and delete
-        SortedListElement_t *deleteThis = SortedList_lookup(list, t_data->key_array[t_data[thread_num]][i]->key);
+		SortedListElement_t *deleteThis = SortedList_lookup(list, *(t_data.key_array)[t_data.thread_num][i]);
         SortedList_delete(deleteThis);
     }
 }
@@ -162,7 +163,7 @@ int main(int argc, char** argv){
 		exit(1);
 	}
 	
-	for (int i = 0; i < thread; i++){
+	for (int i = 0; i < threads; i++){
 		thread_data[i].iterations = iterations;
 		thread_data[i].thread_num = i;
 		thread_data[i].key_array = &arr;
