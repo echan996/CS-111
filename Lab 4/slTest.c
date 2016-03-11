@@ -37,7 +37,7 @@ void* thread_action(void* arg){
 		for (int i = 0; i < t_data.iterations; i++){
 			pthread_mutex_lock(&m_test_mutex);
 			SortedList_delete(SortedList_lookup(list, t_data.key_array[t_data.thread_num][i].key));
-			pthread_mutex_lock(&m_test_mutex);
+			pthread_mutex_unlock(&m_test_mutex);
 		}
 	}
 	else if (locker == 's'){

@@ -6,9 +6,7 @@
 #include <assert.h>
 #include <pthread.h>
 void SortedList_insert(SortedList_t *list, SortedListElement_t *element){
-    if (opt_yield & INSERT_YIELD){
-        pthread_yield();
-    }
+   
     // list is empty --> next = NULL
     int length, compare_cur, compare_next;
 	if (list->next == NULL){
@@ -36,7 +34,10 @@ void SortedList_insert(SortedList_t *list, SortedListElement_t *element){
 			it = it->next;
         }
             
-    insert:
+	insert:
+		if (opt_yield & INSERT_YIELD){
+			pthread_yield();
+		}
         element->next = it->next;
         element->prev = it;
         it->next = element;
@@ -47,15 +48,15 @@ void SortedList_insert(SortedList_t *list, SortedListElement_t *element){
 }
 
 int SortedList_delete(SortedListElement_t *element){
-    if (opt_yield & DELETE_YIELD){
-        pthread_yield();
-    }
+   
 	if (element == NULL)
         return 1;
     
     SortedListElement_t *p = element->prev;
 	SortedListElement_t *n = element->next;
-    
+	if (opt_yield & DELETE_YIELD){
+		pthread_yield();
+	}
     if (p->next != element && n != NULL && n->prev != element){
 		return 1;
 	}
@@ -69,17 +70,17 @@ int SortedList_delete(SortedListElement_t *element){
 }
 
 SortedListElement_t *SortedList_lookup(SortedList_t *list, const char *key){
-    if (opt_yield & SEARCH_YIELD){
-        pthread_yield();
-    }
+   
 	SortedListElement_t *it = list->next;
-    int count = 1;
+    
 	while (it != NULL){
 		if (strcmp(it->key, key) == 0){
             return it;
 		}
 		it = it->next;
-        count++;
+		if (opt_yield & SEARCH_YIELD){
+			pthread_yield();
+		}
 	}
 	return NULL;
 }
