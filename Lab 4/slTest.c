@@ -21,7 +21,7 @@ int opt_yield = 0;
 typedef struct s_thread_info{
 	int iterations;
 	int thread_num;
-	SortedListElement_t*** key_array;
+	SortedListElement_t** key_array;
 }thread_info;
 
 void* thread_action(void* arg){
@@ -48,8 +48,8 @@ void* thread_action(void* arg){
                 int old = counter;
                 if (opt_yield)
                     pthread_yield();
-                int sum = old + 1;
-            }while(__sync_val_compare_and_swap(&counter, old, sum)==*counter);
+                int sum = old + 1
+				}while(__sync_val_compare_and_swap(&counter, old, sum)==*counter);
             do{
                 int old = counter;
                 if (opt_yield)
@@ -58,10 +58,24 @@ void* thread_action(void* arg){
             } while (__sync_val_compare_and_swap(&counter, old, sum) == *counter);
         }
     }*/
-	
-	for (int i = 0; i < t_data.iterations; i++){
-		SortedList_insert(list, *(t_data.key_array)[t_data.thread_num][i]);
-	}
+    // printf("here!");
+    //fprintf(stdout,"%d\n", t_data.iterations);
+    //fprintf(stdout,"%s\n", (t_data.key_array)[t_data.thread_num][t_data.iterations-1].key);
+    for (int i = 0; i < t_data.iterations; i++){
+		SortedList_insert(list, &t_data.key_array[t_data.thread_num][i]);
+    }
+    int i= SortedList_length(list);
+    fprintf(stdout, "%d\n",i);
+    for(SortedListElement_t* iteration = list->next;iteration!=NULL;iteration=iteration->next)
+		fprintf(stdout,"%s\n",iteration->key);
+    for(int i=0;i<t_data.iterations;i++){
+		fprintf(stdout,"hello!\n");
+		SortedList_delete(SortedList_lookup(list,t_data.key_array[t_data.thread_num][i].key));
+      
+    }
+    
+	//SortedListElement_t checking_this=*SortedList_lookup(list,(t_data.key_array[t_data.thread_num][0]->key));
+	//printf("%s\n",checking_this.key);
 	/*for (int i = startIndex; i < endIndex; i++){
         SortedListElement_t *insertMe = t_data.key_array[i];
         fprintf(stderr, "inserting key %c\n", insertMe->key);
@@ -99,6 +113,7 @@ int main(int argc, char** argv){
     double per_op;
     long long time_init, time_finish;
     char option;
+
     while ((option = (char)getopt_long(argc, argv, "", long_options, &i)) != -1){
         switch (option){
             case 'a':
@@ -134,8 +149,10 @@ int main(int argc, char** argv){
                 break;
         }
     }
-    SortedListElement_t ***arr = (SortedListElement_t ***)malloc(threads*iterations*sizeof(SortedListElement_t *));
-    
+    SortedListElement_t **arr = (SortedListElement_t **)malloc(threads*sizeof(SortedListElement_t *));
+    for(int i=0;i<threads;i++){
+      arr[i]=(SortedListElement_t*)malloc(iterations*sizeof(SortedListElement_t));
+    }
     
     // initialize empty list
     list = (SortedList_t *)malloc(sizeof(SortedList_t));
@@ -147,17 +164,19 @@ int main(int argc, char** argv){
 	for (int t = 0; t < threads; t++){
 		for (int i = 0; i < iterations; i++){
 			int len = (rand() % 49) + 1; // random length from 1 to 50
-			char *s = (char *)malloc(len);
+			char *s = (char *)malloc(len+1);
 			for (int j = 0; j < len; ++j) {
 				s[j] = alphanum[rand() % (52)];
 			}
 			s[len] = '\0';
-			SortedListElement_t *add = (SortedListElement_t *)malloc(sizeof(SortedListElement_t));
-			add->key = s;
-			arr[t][i] = add;
+			arr[t][i].next = NULL;
+			arr[t][i].prev = NULL;
+			arr[t][i].key = s;
+			
 		}
-	}
-    pthread_t *tids = malloc(threads*sizeof(pthread_t));
+   	}
+	//fprintf(stdout,"here!");
+	 pthread_t *tids = malloc(threads*sizeof(pthread_t));
     if (tids == NULL){
         fprintf(stderr, "Error: memory not allocated\n");
         exit(1);
@@ -173,12 +192,13 @@ int main(int argc, char** argv){
 	for (int i = 0; i < threads; i++){
 		thread_data[i].iterations = iterations;
 		thread_data[i].thread_num = i;
-		thread_data[i].key_array = &arr;
+		thread_data[i].key_array = arr;
+		
 	}
-
+	
     clock_gettime(CLOCK_MONOTONIC, &timer);
     time_init = timer.tv_sec * 1000000000 + timer.tv_nsec;
-	
+
 	for (int a = 0, create_check = 0; a < threads; a++){
         create_check = pthread_create(tids + a, 0, thread_action, &thread_data[a]);
         if (create_check){
@@ -188,7 +208,7 @@ int main(int argc, char** argv){
     for (int a = 0; a < threads; a++){
         pthread_join(tids[a], 0);
     }
-    
+    /*
     
     clock_gettime(CLOCK_MONOTONIC, &timer);
     free(tids);
@@ -201,5 +221,5 @@ int main(int argc, char** argv){
     fprintf(stdout, "elapsed time: %lld\n", time_finish);
     per_op = time_finish / operations;
     fprintf(stdout, "per operation: %f\n", per_op);
-    return 0;
+	*/return 0;
 }
