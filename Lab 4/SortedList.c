@@ -5,7 +5,10 @@
 #include <assert.h>
 
 void SortedList_insert(SortedList_t *list, SortedListElement_t *element){
-	// list is empty --> next = NULL
+    if (opt_yield & INSERT_YIELD){
+        pthread_yield();
+    }
+    // list is empty --> next = NULL
     int length, compare_cur, compare_next;
 	if (list->next == NULL){
 		list->next = element;
@@ -43,6 +46,9 @@ void SortedList_insert(SortedList_t *list, SortedListElement_t *element){
 }
 
 int SortedList_delete(SortedListElement_t *element){
+    if (opt_yield & DELETE_YIELD){
+        pthread_yield();
+    }
 	if (element == NULL)
         return 1;
     
@@ -62,6 +68,9 @@ int SortedList_delete(SortedListElement_t *element){
 }
 
 SortedListElement_t *SortedList_lookup(SortedList_t *list, const char *key){
+    if (opt_yield & SEARCH_YIELD){
+        pthread_yield();
+    }
 	SortedListElement_t *it = list->next;
     int count = 1;
 	while (it != NULL){
@@ -75,6 +84,9 @@ SortedListElement_t *SortedList_lookup(SortedList_t *list, const char *key){
 }
 
 int SortedList_length(SortedList_t *list){
+    if (opt_yield & SEARCH_YIELD){
+        pthread_yield();
+    }
 	SortedListElement_t *it = list;
 	int counter = -1;
 	while (it != NULL){

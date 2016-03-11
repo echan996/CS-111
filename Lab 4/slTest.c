@@ -8,18 +8,21 @@
 #include <time.h>
 #include <pthread.h>
 #include <sys/resource.h>
-#include "SortedList.c"
+#include "SortedList.h"
 char locker = '\0';
 long long counter = 0;
 int i_yield=0, d_yield=0, s_yield=0;
 int s_test_lock = 0;
 pthread_mutex_t m_test_mutex;
 SortedList_t *list;
+int opt_yield = 0;
+
 typedef struct s_thread_info{
 	int iterations;
 	int thread_num;
 	SortedListElement_t*** key_array;
 }thread_info;
+
 void* thread_action(void* arg){
     thread_info t_data= *(thread_info*)arg;
    /* if (locker == 'm'){
@@ -55,8 +58,14 @@ void* thread_action(void* arg){
         }
     }*/
 	for (int i = 0; i < t_data.iterations; i++){
-		SortedList_insert(list, t_data->key_array[t_data[thread_num]][i]);
+        SortedList_insert(list, t_data->key_array[t_data[t_data->thread_num]][i]);
 	}
+    SortedList_length(list);
+    for (int i = 0; i < t_data.iterations; i++){
+        // lookup and delete
+        SortedListElement_t *deleteThis = SortedList_lookup(list, t_data->key_array[t_data[thread_num]][i]->key);
+        SortedList_delete(deleteThis);
+    }
 }
 
 
@@ -95,11 +104,11 @@ int main(int argc, char** argv){
             case 'c':
 				for (int i = 0; optarg[i] != '\0'; i++){
 					if (optarg[i] == 'i')
-						i_yield = 1;
+						opt_yield = opt_yield | INSERT_YIELD;
 					else if (optarg[i] == 'd')
-						d_yield = 1;
+						opt_yield = opt_yield | DELETE_YIELD;
 					else if (optarg[i] == 's')
-						s_yield = 1;
+						opt_yield = opt_yield | SEARCH_YIELD;
 					else{
 						fprintf(stderr, "Error: Arguments to --yield must be a member of [ids]\n");
 						break;
@@ -116,14 +125,28 @@ int main(int argc, char** argv){
         }
     }
     
+    SortedListElement_t **arr = (SortedListElement_t **)malloc(threads*iterations*sizeof(SortedListElement_t));
+    
     // initialize empty list
-    SortedList_t *list = (SortedList_t *)malloc(sizeof(SortedList_t));
+    list = (SortedList_t *)malloc(sizeof(SortedList_t));
     list->next = NULL;
     list->prev = NULL;
     list->key = NULL;
     
-    for (int e = 0; e < threads*iterations; e++){
-        
+    static const char alphanum[] =     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    
+    for (int t = 0; t < threads; t++){
+        for (int it = 0; it < iterations; it++){
+            char *s;
+            int len = (rand() % 49) + 1; // random length from 1 to 50
+            for (int j = 0; j < len; ++j) {
+                s[j] = alphanum[rand() % (sizeof(alphanum) - 1)];
+            }
+            s[len] = 0;
+            SortedListElement_t *add = (SortedListElement_t *)malloc(sizeof(SortedListElement_t));
+            add->key = s;
+            arr[t][it] = add;
+        }
     }
     
     pthread_t *tids = malloc(threads*sizeof(pthread_t));
@@ -132,7 +155,7 @@ int main(int argc, char** argv){
         exit(1);
     }
 
-	thread_info * thread_data = malloc(threads*sizeof(thread_info));
+	thread_info *thread_data = malloc(threads*sizeof(thread_info));
 	
 	if (thread_data == NULL){
 		fprintf(stderr, "Error: memory not allocated\n");
