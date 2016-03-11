@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
+
 /*
  * SortedList (and SortedListElement)
  *
@@ -64,7 +69,7 @@ int SortedList_delete( SortedListElement_t *element);
  * Note: if (opt_yield & SEARCH_YIELD)
  *		call pthread_yield in middle of critical section
  */
-SortedListElement_t *SortedList_lookup(SortedList_t *list, const char *key);
+SortedListElement_t* SortedList_lookup(SortedList_t *list, const char *key);
 
 /**
  * SortedList_length ... count elements in a sorted list
@@ -87,3 +92,95 @@ extern int opt_yield;
 #define	INSERT_YIELD	0x01	// yield in insert critical section
 #define	DELETE_YIELD	0x02	// yield in delete critical section
 #define	SEARCH_YIELD	0x04	// yield in lookup/length critical section
+
+void SortedList_insert(SortedList_t *list, SortedListElement_t *element){
+    if (opt_yield & INSERT_YIELD){
+        pthread_yield();
+    }
+    // list is empty --> next = NULL
+    int length, compare_cur, compare_next;
+    if (list->next == NULL){
+        list->next = element;
+        element->prev = list;
+        element->next = NULL;
+    }
+    // list is filled --> iterate through the list to find where to place it and connect accordingly
+    else {
+        SortedListElement_t *it = list->next; // don't want to start comparing to the head's key,
+        // but the key of the actual first element in list
+        // CASE 1: before the first element
+        if ((compare_cur = strcmp(it->key, element->key)) > 0){
+            it = list;
+            goto insert;
+        }
+        
+        // CASE 2: between two elements or after last element
+        while (it->next != NULL) {
+            compare_cur = strcmp(it->key, element->key);
+            compare_next = strcmp(it->next->key, element->key);
+            if ((compare_cur <= 0) && (compare_next >= 0)){
+                break;
+            }
+            it = it->next;
+        }
+        
+    insert:
+        element->next = it->next;
+        element->prev = it;
+        it->next = element;
+        if (element->next != NULL){
+            element->next->prev = element;
+        }
+    }
+}
+
+int SortedList_delete(SortedListElement_t *element){
+    if (opt_yield & DELETE_YIELD){
+        pthread_yield();
+    }
+    if (element == NULL)
+        return 1;
+    
+    SortedListElement_t *p = element->prev;
+    SortedListElement_t *n = element->next;
+    
+    if (p->next != element && n != NULL && n->prev != element){
+        return 1;
+    }
+    
+    p->next = n;
+    if (n != NULL){
+        n->prev = p;
+    }
+    free(element);
+    return 0;
+}
+
+SortedListElement_t *SortedList_lookup(SortedList_t *list, const char *key){
+    if (opt_yield & SEARCH_YIELD){
+        pthread_yield();
+    }
+    SortedListElement_t *it = list->next;
+    int count = 1;
+    while (it != NULL){
+        if (strcmp(it->key, key) == 0){
+            return it;
+        }
+        it = it->next;
+        count++;
+    }
+    return NULL;
+}
+
+int SortedList_length(SortedList_t *list){
+    if (opt_yield & SEARCH_YIELD){
+        pthread_yield();
+    }
+    SortedListElement_t *it = list;
+    int counter = -1;
+    while (it != NULL){
+        counter++;
+        it = it->next;
+    }
+    return counter;
+}

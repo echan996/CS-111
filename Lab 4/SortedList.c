@@ -96,7 +96,7 @@ int SortedList_length(SortedList_t *list){
 	return counter;
 }
 
-int main(){
+/*int main(){
     SortedList_t *list = (SortedList_t *)malloc(sizeof(SortedList_t));
     list->next = NULL;
     list->prev = NULL;
@@ -195,7 +195,7 @@ int main(){
         it = it->next;
         i++;
     }
-     */
+     // add another end comment section here
     
     static const char alphanum[] =     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     
@@ -218,4 +218,4 @@ int main(){
         add->key = s;
         SortedList_insert(newlist, add);
     }
-}
+}*/

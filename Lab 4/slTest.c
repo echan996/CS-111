@@ -9,6 +9,7 @@
 #include <pthread.h>
 #include <sys/resource.h>
 #include "SortedList.h"
+
 char locker = '\0';
 long long counter = 0;
 int i_yield=0, d_yield=0, s_yield=0;
@@ -59,12 +60,12 @@ void* thread_action(void* arg){
     }*/
 	
 	for (int i = 0; i < t_data.iterations; i++){
-        SortedList_insert(list, *(t_data.key_array)[t_data.thread_num][i]);
+        SortedList_insert(list, (t_data.key_array)[t_data.thread_num][i]);
 	}
     SortedList_length(list);
     for (int i = 0; i < t_data.iterations; i++){
         // lookup and delete
-		SortedListElement_t *deleteThis = SortedList_lookup(list, *(t_data.key_array)[t_data.thread_num][i]);
+		SortedListElement_t *deleteThis = SortedList_lookup(list, (t_data.key_array)[t_data.thread_num][i]);
         SortedList_delete(deleteThis);
     }
 }
@@ -146,7 +147,7 @@ int main(int argc, char** argv){
             s[len] = 0;
             SortedListElement_t *add = (SortedListElement_t *)malloc(sizeof(SortedListElement_t));
             add->key = s;
-            arr[t][it] = add;
+            arr[t][it] = *add;
         }
     }
     
