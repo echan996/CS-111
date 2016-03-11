@@ -59,13 +59,19 @@ void* thread_action(void* arg){
         }
     }*/
 	
-	for (int i = 0; i < t_data.iterations; i++){
-        SortedList_insert(list, (t_data.key_array)[t_data.thread_num][i]);
+    int startIndex = t_data.thread_num;
+    int endIndex = (t_data.thread_num + 1) * t_data.iterations;
+	for (int i = startIndex; i < endIndex; i++){
+        fprintf(stderr, "inserting\n");
+        SortedList_insert(list, (t_data.key_array)[i]);
 	}
+    fprintf(stderr, "length\n");
     SortedList_length(list);
-    for (int i = 0; i < t_data.iterations; i++){
+    for (int i = startIndex; i < endIndex; i++){
         // lookup and delete
-		SortedListElement_t *deleteThis = SortedList_lookup(list, (t_data.key_array)[t_data.thread_num][i]);
+        fprintf(stderr, "searching\n");
+		SortedListElement_t *deleteThis = SortedList_lookup(list, (t_data.key_array)[i]);
+        fprintf(stderr, "deleting\n");
         SortedList_delete(deleteThis);
     }
 }
@@ -126,8 +132,8 @@ int main(int argc, char** argv){
                 break;
         }
     }
+    SortedListElement_t **arr = (SortedListElement_t **)malloc(threads*iterations*sizeof(SortedListElement_t *));
     
-    SortedListElement_t **arr = (SortedListElement_t **)malloc(threads*iterations*sizeof(SortedListElement_t));
     
     // initialize empty list
     list = (SortedList_t *)malloc(sizeof(SortedList_t));
@@ -136,19 +142,18 @@ int main(int argc, char** argv){
     list->key = NULL;
     
     static const char alphanum[] =     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    
-    for (int t = 0; t < threads; t++){
-        for (int it = 0; it < iterations; it++){
-            char *s;
+    for (int t = 0; t < threads*iterations; t++){
             int len = (rand() % 49) + 1; // random length from 1 to 50
+            char *s = (char *)malloc(len);
             for (int j = 0; j < len; ++j) {
                 s[j] = alphanum[rand() % (sizeof(alphanum) - 1)];
             }
             s[len] = 0;
             SortedListElement_t *add = (SortedListElement_t *)malloc(sizeof(SortedListElement_t));
             add->key = s;
-            arr[t][it] = *add;
-        }
+            arr[t] = (SortedListElement_t *)malloc(sizeof(SortedListElement_t));
+            arr[t] = add;
+
     }
     
     pthread_t *tids = malloc(threads*sizeof(pthread_t));
@@ -173,8 +178,6 @@ int main(int argc, char** argv){
     clock_gettime(CLOCK_MONOTONIC, &timer);
     time_init = timer.tv_sec * 1000000000 + timer.tv_nsec;
 	
-	
-    
 	for (int a = 0, create_check = 0; a < threads; a++){
         create_check = pthread_create(tids + a, 0, thread_action, &thread_data[a]);
         if (create_check){
