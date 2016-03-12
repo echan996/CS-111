@@ -73,7 +73,7 @@ void* thread_action(void* arg){
 		int i = SortedList_length(list);
 
 		for (int i = 0; i < t_data.iterations; i++){
-			list_num = hash_func(t_data.key_array[t_data.thread_num][i].key[0]);
+			list_num = hash_func(t_data.key_array[t_data.thread_num][i].key[0]);	
 			SortedList_delete(SortedList_lookup(list[list_num], t_data.key_array[t_data.thread_num][i].key));
 		}
 	}
