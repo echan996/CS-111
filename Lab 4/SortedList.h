@@ -92,8 +92,5 @@ extern int opt_yield;
 int numlists;
 #define	INSERT_YIELD	0x01	// yield in insert critical section
 #define	DELETE_YIELD	0x02	// yield in delete critical section
-<<<<<<< HEAD
 #define	SEARCH_YIELD	0x04	// yield in lookup/length critical section
-=======
-#define	SEARCH_YIELD	0x04	// yield in lookup/length critical section
->>>>>>> origin/master
+
