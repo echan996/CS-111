@@ -26,6 +26,7 @@ typedef struct s_thread_info{
 int hash_func(char a){
 	return ((int)a) % numlists;
 }
+
 void* thread_action(void* arg){
 
     thread_info t_data= *(thread_info*)arg;
@@ -98,7 +99,7 @@ int main(int argc, char** argv){
     long long threads, iterations;
     threads = iterations = 1;
     int i = 0;
-    long long operations;
+    long long operations, avglen;
     double per_op;
     long long time_init, time_finish;
     char option;
@@ -219,7 +220,11 @@ int main(int argc, char** argv){
     clock_gettime(CLOCK_MONOTONIC, &timer);
     free(tids);
     time_finish = timer.tv_sec * 1000000000 + timer.tv_nsec - time_init;
-    operations = threads* iterations * 2 * (iterations/2);
+    if (iterations == 1)
+        avglen = 1;
+    else
+        avglen = iterations / 2;
+    operations = threads* iterations * 2 * avglen;
     fprintf(stdout, "%d threads x %d iterations x (ins + lookup/del) x (%d/2 avg len) = %ld operations\n", threads, iterations, iterations, operations);
     if (counter != 0){ // don't need this???
         fprintf(stderr, "Error: final count = %lld\n", counter);
