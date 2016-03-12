@@ -85,17 +85,40 @@ a large section of time will be spent on waiting on access to a protected variab
 ************************
 
 QUESTIONS 2.1
-1) 
+1) As seen in the graph, the cost per iteration starts very high, drops dramatically, and begins 
+to increase again towards of our data collection. Specifically, we got about 81 ns for 50 iterations,
+9 ns for 500 iterations, 7 ns for 5000 iterations, and 13 ns for 50000 iterations. The decrease in time
+in the beginning of the trend is a bit confusing. We can theorize that this is due to overhead,
+particularly in the overhead of creating threads. When we think of it this way, it makes sense because
+this is the same kind of reasoning we saw in part 1 where the cost per operation decreases because the
+thread creation time is spread amongst more operations.
 
+The increase also makes sense. We begin to see an increase in time because we have hit a point
+where the larger iterations (which correlates to more elements) are needing to traverse more elements,
+which will obviously take longer amounts of time. If we want to fix this, we should use lists. This
+will divide the work so that the time will stay low and we will no longer see the increasing trend.
 
 QUESTIONS 2.2
-1) 
+1) For this part of the assignment, I used the following command in order to collect data:
+$ ./sltest —-iteration=1000 —-threads=# —sync=m —yield=s
+In this case, we varied the number of threads since we were supposed to graph different values
+of threads. Comparing the change in time as compared to the change in the number of iterations, we
+can see that they grow in an exponential trend. Compared to part 1, this is a similar trend as they
+both increase as the number of threads increases. This is because since there is only one lock, 
+more threads will need to share this lock, meaning that they will each be waiting longer as the
+number of threads increases. Overall, sltest will take longer than addtest because of the
+complexity of the thread actions. addtest has the simple computation of adding numbers, while 
+sltest demands traversing across many pointers several times.
 
 
 QUESTIONS 2.3
-1) 
+1) When there are multiple lists, there are more locks available for each of the threads to use, s
+they will spend less time wasted waiting around. Thus, we see faster results.
 
-2) 
+2) We can see a more interesting number when we increase the threads per list because the threads
+are doing more useful work since, once again, they will not be waiting for a lock to open up. If
+there are more lists, there will be a lot of wasted waiting time for the single lock that all threads
+share.
 
 
 ************************
