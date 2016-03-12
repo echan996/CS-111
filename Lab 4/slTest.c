@@ -32,7 +32,7 @@ void* thread_action(void* arg){
     thread_info t_data= *(thread_info*)arg;
 	int list_num;
 	if (locker == 'm'){
-		for (int i = 0; i < t_data.iterations; i++){
+		for (int i = 0; i < t_data.iterations; i++){ 
 			pthread_mutex_lock(&m_test_mutexs[t_data.thread_num]);
 			list_num = hash_func(t_data.key_array[t_data.thread_num][i].key[0]);
 			SortedList_insert(list[list_num], &t_data.key_array[t_data.thread_num][i]);
