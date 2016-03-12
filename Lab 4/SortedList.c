@@ -85,15 +85,14 @@ SortedListElement_t *SortedList_lookup(SortedList_t *list, const char *key){
 	return NULL;
 }
 
-int SortedList_length(SortedList_t *list){
-    if (opt_yield & SEARCH_YIELD){
-        pthread_yield();
-    }
-	SortedListElement_t *it = list;
-	int counter = -1;
-	while (it != NULL){
-		counter++;
-		it = it->next;
+int SortedList_length(SortedList_t **list){
+	int counter = -numlists;
+	for (int i = 0; i < numlists; i++){
+		SortedListElement_t *it = list[i];
+		while (it != NULL){
+			counter++;
+			it = it->next;
+		}
 	}
 	return counter;
 }

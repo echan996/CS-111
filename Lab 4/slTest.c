@@ -14,7 +14,7 @@ char locker = '\0';
 long long counter = 0;
 int s_test_lock = 0;
 pthread_mutex_t m_test_mutex;
-SortedList_t *list;
+SortedList_t **list;
 int opt_yield = 0;
 
 typedef struct s_thread_info{
@@ -23,12 +23,17 @@ typedef struct s_thread_info{
 	SortedListElement_t** key_array;
 }thread_info;
 
+int hash_func(char a){
+	return ((int)a) % numthreads;
+}
 void* thread_action(void* arg){
+
     thread_info t_data= *(thread_info*)arg;
+	int list_num = hash_func(&t_data.key_array[t_data.thread_num][i].key[0]);
 	if (locker == 'm'){
 		for (int i = 0; i < t_data.iterations; i++){
 			pthread_mutex_lock(&m_test_mutex);
-			SortedList_insert(list, &t_data.key_array[t_data.thread_num][i]);
+			SortedList_insert(list[list_num], &t_data.key_array[t_data.thread_num][i]);
 			pthread_mutex_unlock(&m_test_mutex);
 		}
 
@@ -36,14 +41,14 @@ void* thread_action(void* arg){
 
 		for (int i = 0; i < t_data.iterations; i++){
 			pthread_mutex_lock(&m_test_mutex);
-			SortedList_delete(SortedList_lookup(list, t_data.key_array[t_data.thread_num][i].key));
+			SortedList_delete(SortedList_lookup(list[list_num], t_data.key_array[t_data.thread_num][i].key));
 			pthread_mutex_unlock(&m_test_mutex);
 		}
 	}
 	else if (locker == 's'){
 		for (int i = 0; i < t_data.iterations; i++){
 			while (__sync_lock_test_and_set(&s_test_lock, 1));
-			SortedList_insert(list, &t_data.key_array[t_data.thread_num][i]);
+			SortedList_insert(list[list_num], &t_data.key_array[t_data.thread_num][i]);
 			__sync_lock_release(&s_test_lock);
 		}
 
@@ -51,19 +56,19 @@ void* thread_action(void* arg){
 
 		for (int i = 0; i < t_data.iterations; i++){
 			while (__sync_lock_test_and_set(&s_test_lock, 1));
-			SortedList_delete(SortedList_lookup(list, t_data.key_array[t_data.thread_num][i].key));
+			SortedList_delete(SortedList_lookup(list[list_num], t_data.key_array[t_data.thread_num][i].key));
 			__sync_lock_release(&s_test_lock);
 		}
 	}
 	else{
 		for (int i = 0; i < t_data.iterations; i++){
-			SortedList_insert(list, &t_data.key_array[t_data.thread_num][i]);
+			SortedList_insert(list[list_num], &t_data.key_array[t_data.thread_num][i]);
 		}
 
 		int i = SortedList_length(list);
 
 		for (int i = 0; i < t_data.iterations; i++){
-			SortedList_delete(SortedList_lookup(list, t_data.key_array[t_data.thread_num][i].key));
+			SortedList_delete(SortedList_lookup(list[list_num], t_data.key_array[t_data.thread_num][i].key));
 		}
 	}
 
@@ -77,6 +82,7 @@ static struct option long_options[] = {
     { "iterations", required_argument, 0, 'b' },
     { "yield", required_argument, 0, 'c' },
     { "sync", required_argument, 0, 'd' },
+	{ "lists", required_argument, 0, 'e' },
     {0,0,0,0}
 };
 
@@ -124,22 +130,31 @@ int main(int argc, char** argv){
 					exit(1);
 				}
                 break;
+			case 'e':
+				if ((numlists = atoi(optarg)) == 0){
+					fprintf(stderr, "Error: must have positive number of lists\n");
+					exit(1);
+				}
+				break;
                 
             default:
                 fprintf(stderr, "Error: Invalid argument\n");
                 break;
         }
     }
-    SortedListElement_t **arr = (SortedListElement_t **)malloc(threads*sizeof(SortedListElement_t *));
+	SortedListElement_t **arr = (SortedListElement_t **)malloc( threads*sizeof(SortedListElement_t *));
     for(int i=0;i<threads;i++){
       arr[i]=(SortedListElement_t*)malloc(iterations*sizeof(SortedListElement_t));
     }
     
     // initialize empty list
-    list = (SortedList_t *)malloc(sizeof(SortedList_t));
-    list->next = NULL;
-    list->prev = NULL;
-    list->key = NULL;
+    list = (SortedList_t **)malloc(sizeof(SortedList_t*)*numlists);
+	for (int i = 0; i < numlists; i++){
+		list[i] = (SortedList_t *)malloc(sizeof(SortedList_t));
+		list[i]->next = NULL;
+		list[i]->prev = NULL;
+		list[i]->key = NULL;
+	}
     //printf("here!");
     static const char alphanum[] =     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 	for (int t = 0; t < threads; t++){
