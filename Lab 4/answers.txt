@@ -127,4 +127,5 @@ If the mutex is released right before the call to pthread_cond_wait, another thr
 it true. In this case, we not want to make the thread wait, 	as its condition is satisfied. As a result, the
 release of mutex must be done within the pthread_cond_wait call.
 
-5) 
+5) It must be in kernel mode. Since we require for the function to atomic, there is no way to guarantee for this
+correctness if we run purely in user mode, as we could be interrupted at any point.
