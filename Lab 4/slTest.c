@@ -24,7 +24,7 @@ typedef struct s_thread_info{
 }thread_info;
 
 int hash_func(char a){
-	return ((int)a) % numthreads;
+	return ((int)a) % numlists;
 }
 void* thread_action(void* arg){
 
