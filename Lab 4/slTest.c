@@ -12,8 +12,8 @@
 
 char locker = '\0';
 long long counter = 0;
-int s_test_lock = 0;
-pthread_mutex_t m_test_mutex;
+int* s_test_locks;
+pthread_mutex_t* m_test_mutexs;
 SortedList_t **list;
 int opt_yield = 0;
 
@@ -33,36 +33,36 @@ void* thread_action(void* arg){
 	int list_num;
 	if (locker == 'm'){
 		for (int i = 0; i < t_data.iterations; i++){
-			pthread_mutex_lock(&m_test_mutex);
+			pthread_mutex_lock(&m_test_mutexs[thread_num]);
 			list_num = hash_func(t_data.key_array[t_data.thread_num][i].key[0]);
 			SortedList_insert(list[list_num], &t_data.key_array[t_data.thread_num][i]);
-			pthread_mutex_unlock(&m_test_mutex);
+			pthread_mutex_unlock(&m_test_mutexs[thread_num]);
 		}
 
 		int i = SortedList_length(list);
 
 		for (int i = 0; i < t_data.iterations; i++){
-			pthread_mutex_lock(&m_test_mutex);
+			pthread_mutex_lock(&m_test_mutexs[thread_num]);
 			list_num = hash_func(t_data.key_array[t_data.thread_num][i].key[0]);
 			SortedList_delete(SortedList_lookup(list[list_num], t_data.key_array[t_data.thread_num][i].key));
-			pthread_mutex_unlock(&m_test_mutex);
+			pthread_mutex_unlock(&m_test_mutexs[thread_num]);
 		}
 	}
 	else if (locker == 's'){
 		for (int i = 0; i < t_data.iterations; i++){
-			while (__sync_lock_test_and_set(&s_test_lock, 1));
+			while (__sync_lock_test_and_set(&s_test_locks[thread_num], 1));
 			list_num = hash_func(t_data.key_array[t_data.thread_num][i].key[0]);
 			SortedList_insert(list[list_num], &t_data.key_array[t_data.thread_num][i]);
-			__sync_lock_release(&s_test_lock);
+			__sync_lock_release(&s_test_locks[thread_num]);
 		}
 
 		int i = SortedList_length(list);
 
 		for (int i = 0; i < t_data.iterations; i++){
-			while (__sync_lock_test_and_set(&s_test_lock, 1));
+			while (__sync_lock_test_and_set(&s_test_locks[thread_num], 1));
 			list_num = hash_func(t_data.key_array[t_data.thread_num][i].key[0]);
 			SortedList_delete(SortedList_lookup(list[list_num], t_data.key_array[t_data.thread_num][i].key));
-			__sync_lock_release(&s_test_lock);
+			__sync_lock_release(&s_test_locks[thread_num]);
 		}
 	}
 	else{
@@ -95,7 +95,6 @@ static struct option long_options[] = {
 
 
 int main(int argc, char** argv){
-    pthread_mutex_init(&m_test_mutex, NULL);
     long long threads, iterations;
     threads = iterations = 1;
     int i = 0;
@@ -151,6 +150,12 @@ int main(int argc, char** argv){
                 break;
         }
     }
+	m_test_mutexs = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t)*numlists);
+	s_test_locks = (int*)malloc(sizeof(int)*numlists);
+	for (int i = 0; i < numlists; i++){
+		pthread_mutex_init(&m_test_mutexs[i], NULL);
+		s_test_locks[i] = 0;
+	}
 	SortedListElement_t **arr = (SortedListElement_t **)malloc( threads*sizeof(SortedListElement_t *));
     for(int i=0;i<threads;i++){
       arr[i]=(SortedListElement_t*)malloc(iterations*sizeof(SortedListElement_t));
