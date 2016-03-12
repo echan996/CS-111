@@ -35,7 +35,7 @@ typedef struct SortedListElement SortedListElement_t;
  * Note: if (opt_yield & INSERT_YIELD)
  *		call pthread_yield in middle of critical section
  */
-void SortedList_insert(SortedList_t **list, SortedListElement_t *element);
+void SortedList_insert(SortedList_t *list, SortedListElement_t *element);
 
 /**
  * SortedList_delete ... remove an element from a sorted list
@@ -83,7 +83,7 @@ SortedListElement_t* SortedList_lookup(SortedList_t *list, const char *key);
  * Note: if (opt_yield & SEARCH_YIELD)
  *		call pthread_yield in middle of critical section
  */
-int SortedList_length(SortedList_t *list);
+int SortedList_length(SortedList_t **list);
 
 /**
  * variable to enable diagnositc calls to pthread_yield
