@@ -33,36 +33,40 @@ void* thread_action(void* arg){
 	int list_num;
 	if (locker == 'm'){
 		for (int i = 0; i < t_data.iterations; i++){ 
-			pthread_mutex_lock(&m_test_mutexs[t_data.thread_num]);
+			
 			list_num = hash_func(t_data.key_array[t_data.thread_num][i].key[0]);
+			pthread_mutex_lock(&m_test_mutexs[list_num]);
 			SortedList_insert(list[list_num], &t_data.key_array[t_data.thread_num][i]);
-			pthread_mutex_unlock(&m_test_mutexs[t_data.thread_num]);
+			pthread_mutex_unlock(&m_test_mutexs[list_num]);
 		}
 
 		int i = SortedList_length(list);
 
 		for (int i = 0; i < t_data.iterations; i++){
-			pthread_mutex_lock(&m_test_mutexs[t_data.thread_num]);
 			list_num = hash_func(t_data.key_array[t_data.thread_num][i].key[0]);
+			pthread_mutex_lock(&m_test_mutexs[list_num]);
+			
 			SortedList_delete(SortedList_lookup(list[list_num], t_data.key_array[t_data.thread_num][i].key));
-			pthread_mutex_unlock(&m_test_mutexs[t_data.thread_num]);
+			pthread_mutex_unlock(&m_test_mutexs[list_num]);
 		}
 	}
 	else if (locker == 's'){
 		for (int i = 0; i < t_data.iterations; i++){
-			while (__sync_lock_test_and_set(&s_test_locks[t_data.thread_num], 1));
 			list_num = hash_func(t_data.key_array[t_data.thread_num][i].key[0]);
+			while (__sync_lock_test_and_set(&s_test_locks[list_num], 1));
+			
 			SortedList_insert(list[list_num], &t_data.key_array[t_data.thread_num][i]);
-			__sync_lock_release(&s_test_locks[t_data.thread_num]);
+			__sync_lock_release(&s_test_locks[list_num]);
 		}
 
 		int i = SortedList_length(list);
 
 		for (int i = 0; i < t_data.iterations; i++){
-			while (__sync_lock_test_and_set(&s_test_locks[t_data.thread_num], 1));
 			list_num = hash_func(t_data.key_array[t_data.thread_num][i].key[0]);
+			while (__sync_lock_test_and_set(&s_test_locks[list_num], 1));
+			
 			SortedList_delete(SortedList_lookup(list[list_num], t_data.key_array[t_data.thread_num][i].key));
-			__sync_lock_release(&s_test_locks[t_data.thread_num]);
+			__sync_lock_release(&s_test_locks[list_num]);
 		}
 	}
 	else{
