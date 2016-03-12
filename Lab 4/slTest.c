@@ -95,10 +95,10 @@ static struct option long_options[] = {
 
 int main(int argc, char** argv){
     pthread_mutex_init(&m_test_mutex, NULL);
-    int threads, iterations;
+    long long threads, iterations;
     threads = iterations = 1;
     int i = 0;
-    long operations;
+    long long operations;
     double per_op;
     long long time_init, time_finish;
     char option;
@@ -137,6 +137,7 @@ int main(int argc, char** argv){
 					exit(1);
 				}
                 break;
+
 			case 'e':
 				if ((numlists = atoi(optarg)) == 0){
 					fprintf(stderr, "Error: must have positive number of lists\n");
@@ -212,19 +213,19 @@ int main(int argc, char** argv){
         pthread_join(tids[a], 0);
     }
     if(SortedList_length(list))
-      fprintf(stdout,"Error: %d length", SortedList_length(list));
-     /*
+      fprintf(stdout,"Error: %d length\n", SortedList_length(list));
+    
     
     clock_gettime(CLOCK_MONOTONIC, &timer);
     free(tids);
     time_finish = timer.tv_sec * 1000000000 + timer.tv_nsec - time_init;
-    operations = threads* iterations * 2;
-    fprintf(stdout, "%d threads x %d iterations x (add + subtract) = %ld operations\n", threads, iterations, operations);
-    if (counter != 0){
+    operations = threads* iterations * 2 * (iterations/2);
+    fprintf(stdout, "%d threads x %d iterations x (ins + lookup/del) x (%d/2 avg len) = %ld operations\n", threads, iterations, iterations, operations);
+    if (counter != 0){ // don't need this???
         fprintf(stderr, "Error: final count = %lld\n", counter);
     }
     fprintf(stdout, "elapsed time: %lld\n", time_finish);
     per_op = time_finish / operations;
     fprintf(stdout, "per operation: %f\n", per_op);
-	*/return 0;
+	return 0;
 }
