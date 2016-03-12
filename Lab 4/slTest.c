@@ -33,7 +33,7 @@ void* thread_action(void* arg){
 	if (locker == 'm'){
 		for (int i = 0; i < t_data.iterations; i++){
 			pthread_mutex_lock(&m_test_mutex);
-			list_num = hash_func(&t_data.key_array[t_data.thread_num][i].key[0]);
+			list_num = hash_func(t_data.key_array[t_data.thread_num][i].key[0]);
 			SortedList_insert(list[list_num], &t_data.key_array[t_data.thread_num][i]);
 			pthread_mutex_unlock(&m_test_mutex);
 		}
@@ -42,7 +42,7 @@ void* thread_action(void* arg){
 
 		for (int i = 0; i < t_data.iterations; i++){
 			pthread_mutex_lock(&m_test_mutex);
-			list_num = hash_func(&t_data.key_array[t_data.thread_num][i].key[0]);
+			list_num = hash_func(t_data.key_array[t_data.thread_num][i].key[0]);
 			SortedList_delete(SortedList_lookup(list[list_num], t_data.key_array[t_data.thread_num][i].key));
 			pthread_mutex_unlock(&m_test_mutex);
 		}
@@ -50,7 +50,7 @@ void* thread_action(void* arg){
 	else if (locker == 's'){
 		for (int i = 0; i < t_data.iterations; i++){
 			while (__sync_lock_test_and_set(&s_test_lock, 1));
-			list_num = hash_func(&t_data.key_array[t_data.thread_num][i].key[0]);
+			list_num = hash_func(t_data.key_array[t_data.thread_num][i].key[0]);
 			SortedList_insert(list[list_num], &t_data.key_array[t_data.thread_num][i]);
 			__sync_lock_release(&s_test_lock);
 		}
@@ -59,21 +59,21 @@ void* thread_action(void* arg){
 
 		for (int i = 0; i < t_data.iterations; i++){
 			while (__sync_lock_test_and_set(&s_test_lock, 1));
-			list_num = hash_func(&t_data.key_array[t_data.thread_num][i].key[0]);
+			list_num = hash_func(t_data.key_array[t_data.thread_num][i].key[0]);
 			SortedList_delete(SortedList_lookup(list[list_num], t_data.key_array[t_data.thread_num][i].key));
 			__sync_lock_release(&s_test_lock);
 		}
 	}
 	else{
 		for (int i = 0; i < t_data.iterations; i++){
-			list_num = hash_func(&t_data.key_array[t_data.thread_num][i].key[0]);
+			list_num = hash_func(t_data.key_array[t_data.thread_num][i].key[0]);
 			SortedList_insert(list[list_num], &t_data.key_array[t_data.thread_num][i]);
 		}
 
 		int i = SortedList_length(list);
 
 		for (int i = 0; i < t_data.iterations; i++){
-			list_num = hash_func(&t_data.key_array[t_data.thread_num][i].key[0]);
+			list_num = hash_func(t_data.key_array[t_data.thread_num][i].key[0]);
 			SortedList_delete(SortedList_lookup(list[list_num], t_data.key_array[t_data.thread_num][i].key));
 		}
 	}
