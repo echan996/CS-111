@@ -11,9 +11,9 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
-struct file_info{
+struct s_file_info{
     int descriptor, readable, writable, open;
-};
+}thread_info;
 struct thread_info{
     int start_ind, end_ind;
     pid_t threadnum;
