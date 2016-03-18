@@ -1,3 +1,5 @@
 Implementation of a ramdisk through a Linux kernel module.
 
 Supports standard read/write procedures, as well as read/write locking for matters of synchronization.
+
+The project uses the QEMU virtual environment.
