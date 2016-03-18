@@ -1,0 +1,28 @@
+Synchronization Techniques Proof of Concept:
+
+The project demonstrates various of synchronization techniques on a simple counter as well as on a linked list.
+
+Synchronization techniques demonstrated here include mutexes, spin-locks, and CAS.
+
+The addtest executable performs synchronous tests on a counter. Options include:
+
+--threads=#
+  //specifies number of threads
+--iterations=#
+  //specifies number of iterations per thread
+--yield=(0/1)
+  //yields control over the processor in the middle of the critical section
+--sync=[msc]
+  //specify synchronous option
+
+The sltest executable performs synchronous tests on a linked list. Options include:
+--threads=#
+  //specifies number of threads
+--iterations=#
+  //specifies number of iterations per thread
+--yield=[ids]
+  //yields control over the processor in the middle of the critical section in different components of the linked list functions
+--sync=[ms]
+  //specify synchronous option
+--lists=#
+  //specify number of linked lists to break up master linked list. Each thread will use a universal hash to pick which list to add to
