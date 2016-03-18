@@ -1,3 +1,63 @@
 Simpsh
-Simple shell script 
+
+Simple shell script
+
 Users invoke shell script by passing arguments telling which files to access, which pipes to create, and which commands to invoke.
+Options to script arguments are passed as long options, whereas arguments to subcommands are passed as they would be in terminal.
+The below are supported options for simpsh:
+
+File flags:
+--append
+  O_APPEND
+--cloexec
+  O_CLOEXEC
+--creat
+  O_CREAT
+--directory
+  O_DIRECTORY
+--dsync
+  O_DSYNC
+--excl
+  O_EXCL
+--nofollow
+  O_NOFOLLOW
+--nonblock
+  O_NONBLOCK
+--rsync
+  O_RSYNC
+--sync
+  O_SYNC
+--trunc
+  O_TRUNC
+
+File opening options:
+--rdonly file
+  O_RDONLY
+--rdwr file
+  O_RDWR
+--wronly file
+  O_WRONLY
+--pipe
+
+Subcommand options:
+--command i o e cmd args
+  //i is input file, o is output file, e is stderr.
+--wait
+  //wait for all commands to finish before exiting shell
+
+Miscellaneous options
+--close file_num
+--verbose
+  //print out each command
+--profile
+  //print out timing information on commands
+--abort
+  //close shell
+--catch N
+  //abort when receiving signal N
+--ignore N
+  //ignore signal N
+--default N
+  //use default behavior for signal N
+--pause
+  //wait for signal
